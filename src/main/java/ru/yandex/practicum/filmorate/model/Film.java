@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.jackson.deserializers.DurationDeserializer;
 
@@ -15,6 +17,8 @@ import java.time.LocalDate;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     private Long id;
 
@@ -30,6 +34,9 @@ public class Film {
 
     @JsonGetter("duration")
     public long getDurationInMinutes() {
+        if (duration == null) {
+            return 0;
+        }
         return duration.toMinutes();
     }
 }

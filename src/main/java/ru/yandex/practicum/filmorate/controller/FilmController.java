@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -13,12 +12,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final static LocalDate FIRST_FILM_RELEASE = LocalDate.of(1895, 12, 28);
     private final Map<Long, Film> films = new HashMap<>();
-    private final static Logger log = LoggerFactory.getLogger(FilmController.class);
 
     @GetMapping
     public Collection<Film> films() {
