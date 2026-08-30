@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
-        log.info("Добавляет нового пользлвателя");
+        log.info("Добавляет нового пользователя");
         log.debug("Данные нового пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                 user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
         if (user.getEmail() == null || user.getEmail().isBlank()) {
@@ -38,7 +38,6 @@ public class UserController {
         }
 
         if (!user.getEmail().contains("@")) {
-            log.debug("Электронная почта пользователя {}", user.getEmail());
             throw new ValidationException("Электронная почта пользователя должна содержать @");
         }
 
@@ -47,12 +46,10 @@ public class UserController {
         }
 
         if (user.getLogin().contains(" ")) {
-            log.debug("Логин пользователя {}", user.getLogin());
             throw new ValidationException("Логин не должен содержать пробелы");
         }
 
         if (user.getBirthday().isAfter(CURRENT_DATE)) {
-            log.debug("День рождения пользователя {}", user.getBirthday());
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
 
@@ -82,7 +79,7 @@ public class UserController {
             log.debug("Данные найденного пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                     currentUser.getEmail(), currentUser.getLogin(), currentUser.getName(), currentUser.getBirthday());
             if (userUpdate.getLogin() == null || userUpdate.getEmail() == null || userUpdate.getBirthday() == null) {
-                log.warn("Отсутствуют некоторрые данные пользователя");
+                log.warn("Отсутствуют некоторые данные пользователя. Возвращаем найденного текущего пользователя");
                 return currentUser;
             }
 
@@ -91,7 +88,6 @@ public class UserController {
             }
 
             if (!userUpdate.getEmail().contains("@")) {
-                log.debug("Электронная почта пользователя {}", userUpdate.getEmail());
                 throw new ValidationException("Электронная почта пользователя должна содержать @");
             }
 
@@ -100,12 +96,10 @@ public class UserController {
             }
 
             if (userUpdate.getLogin().contains(" ")) {
-                log.debug("Логин пользователя {}", userUpdate.getLogin());
                 throw new ValidationException("Логин не должен содержать пробелы");
             }
 
             if (userUpdate.getBirthday().isAfter(CURRENT_DATE)) {
-                log.debug("День рождения пользователя {}", userUpdate.getBirthday());
                 throw new ValidationException("Дата рождения не может быть в будущем");
             }
 
