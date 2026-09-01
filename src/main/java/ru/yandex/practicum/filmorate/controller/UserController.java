@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.utils.IdGenerator;
+import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
+import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final static LocalDate CURRENT_DATE = LocalDate.now();
     private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
@@ -27,30 +27,10 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Validated(CreateSequence.class) @RequestBody User user) {
         log.info("Добавляет нового пользователя");
         log.debug("Данные нового пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                 user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.error("Пустой email");
-            throw new ValidationException("Электронная почта пользователя не должна быть пустой");
-        }
-
-        if (!user.getEmail().contains("@")) {
-            throw new ValidationException("Электронная почта пользователя должна содержать @");
-        }
-
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            throw new ValidationException("Логин не может быть пустым");
-        }
-
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("Логин не должен содержать пробелы");
-        }
-
-        if (user.getBirthday().isAfter(CURRENT_DATE)) {
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
 
         if (user.getName() == null || user.getName().isBlank()) {
             log.warn("Пустое имя пользователя");
@@ -64,39 +44,16 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User userUpdate) {
+    public User update(@Validated(UpdateSequence.class) @RequestBody User userUpdate) {
         log.info("Обновляет данные пользователя");
         log.debug("Данные обновляемого пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                 userUpdate.getEmail(), userUpdate.getLogin(), userUpdate.getName(), userUpdate.getBirthday());
-        if (userUpdate.getId() == null) {
-            throw new ValidationException("Id должен быть указан");
-        }
 
         if (users.containsKey(userUpdate.getId())) {
             log.debug("Пользователь найден среди уже существующих по его id");
             User currentUser = users.get(userUpdate.getId());
             log.debug("Данные найденного пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                     currentUser.getEmail(), currentUser.getLogin(), currentUser.getName(), currentUser.getBirthday());
-
-            if (userUpdate.getEmail() == null || userUpdate.getEmail().isBlank()) {
-                throw new ValidationException("Электронная почта пользователя не должна быть пустой");
-            }
-
-            if (!userUpdate.getEmail().contains("@")) {
-                throw new ValidationException("Электронная почта пользователя должна содержать @");
-            }
-
-            if (userUpdate.getLogin() == null || userUpdate.getLogin().isBlank()) {
-                throw new ValidationException("Логин не может быть пустым");
-            }
-
-            if (userUpdate.getLogin().contains(" ")) {
-                throw new ValidationException("Логин не должен содержать пробелы");
-            }
-
-            if (userUpdate.getBirthday().isAfter(CURRENT_DATE)) {
-                throw new ValidationException("Дата рождения не может быть в будущем");
-            }
 
             if (userUpdate.getName() == null || userUpdate.getName().isBlank()) {
                 log.warn("Пустое имя пользователя");

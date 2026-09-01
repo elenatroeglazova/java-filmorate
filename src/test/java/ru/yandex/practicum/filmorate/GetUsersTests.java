@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GetUsersTests extends UsersBaseTest {
     @Test
-    void getFilmsListTest() throws IOException, InterruptedException {
+    void getUsersListTest() throws IOException, InterruptedException {
         HttpRequest getReq = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/users"))
                 .GET()
@@ -33,8 +33,8 @@ public class GetUsersTests extends UsersBaseTest {
         String body = resp.body().trim();
         List<User> users = objectMapper.readValue(body, new TypeReference<>() {});
 
-        boolean shouldBeAstralInTheList = users.stream()
+        boolean shouldBeKinogolikInTheList = users.stream()
                 .anyMatch(f -> f.getLogin().equals(baseUser.getLogin()));
-        assertTrue(shouldBeAstralInTheList, "В списке должен появиться фильм " + baseUser);
+        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться фильм " + baseUser);
     }
 }

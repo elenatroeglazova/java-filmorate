@@ -61,7 +61,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -107,7 +107,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -132,7 +132,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -140,7 +140,7 @@ public class UpdateUsersTests extends UsersBaseTest {
     }
 
     @Test
-    void updateByUserWithBlankEmailTest() throws IOException, InterruptedException {
+    void updateByUserWithEmptyEmailTest() throws IOException, InterruptedException {
         User user = User.builder()
                 .id(1L)
                 .email("")
@@ -158,7 +158,33 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
+    }
+
+    @Test
+    void updateByUserWithBlankEmailTest() throws IOException, InterruptedException {
+        User user = User.builder()
+                .id(1L)
+                .email(" ")
+                .login("kinofil00")
+                .name("Dolly")
+                .birthday(LocalDate.of(2000, 5, 7))
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(user);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/users"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -184,7 +210,33 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
+    }
+
+    @Test
+    void updateByUserWithEmailInIncorrectFormatTest() throws IOException, InterruptedException {
+        User user = User.builder()
+                .id(1L)
+                .email("kinofil_mail/email@")
+                .login("kinofil00")
+                .name("Dolly")
+                .birthday(LocalDate.of(2000, 5, 7))
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(user);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/users"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -193,6 +245,32 @@ public class UpdateUsersTests extends UsersBaseTest {
 
     @Test
     void updateByUserWithBlankLoginTest() throws IOException, InterruptedException {
+        User user = User.builder()
+                .id(1L)
+                .email("kinofil@email.ru")
+                .login(" ")
+                .name("Dolly")
+                .birthday(LocalDate.of(2000, 5, 7))
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(user);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/users"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
+    }
+
+    @Test
+    void updateByUserWithEmptyLoginTest() throws IOException, InterruptedException {
         User user = User.builder()
                 .id(1L)
                 .email("kinofil@email.ru")
@@ -210,7 +288,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -235,7 +313,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -261,7 +339,33 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
+    }
+
+    @Test
+    void updateByUserWithLoginInIncorrectFormatTest() throws IOException, InterruptedException {
+        User user = User.builder()
+                .id(1L)
+                .email("kinofil@email.ru")
+                .login("($^#*(&")
+                .name("Dolly")
+                .birthday(LocalDate.of(2000, 5, 7))
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(user);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/users"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -287,7 +391,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -353,5 +457,31 @@ public class UpdateUsersTests extends UsersBaseTest {
         user.setId(respUser.getId());
         user.setName(user.getLogin());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
+    }
+
+    @Test
+    void updateByUserWithNameInIncorrectFormatTest() throws IOException, InterruptedException {
+        User user = User.builder()
+                .id(1L)
+                .email("kinofil@email.ru")
+                .login("kinofil00")
+                .name("*$)_/*")
+                .birthday(LocalDate.of(2000, 5, 7))
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(user);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/users"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(400, resp.statusCode(), "PUT /users должен вернуть 400");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
     }
 }
