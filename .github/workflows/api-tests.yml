@@ -6,3 +6,4 @@ on:
 jobs:
   build:
     uses: yandex-praktikum/java-filmorate/.github/workflows/api-tests.yml@ci
+run: mvn clean install -DskipTests
