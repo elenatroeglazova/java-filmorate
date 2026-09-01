@@ -15,7 +15,7 @@ import static java.time.Duration.ofMinutes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-class PostFilmsTests extends BaseTest {
+class PostFilmsTests extends FilmsBaseTest {
 	@Test
 	void postFilmTest() throws IOException, InterruptedException {
 		Film film = Film.builder()

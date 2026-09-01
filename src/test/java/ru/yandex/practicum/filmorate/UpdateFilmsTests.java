@@ -13,7 +13,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofMinutes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class UpdateFilmsTests extends BaseTest {
+public class UpdateFilmsTests extends FilmsBaseTest {
 
     @Test
     public void updateFilmTest() throws IOException, InterruptedException {
