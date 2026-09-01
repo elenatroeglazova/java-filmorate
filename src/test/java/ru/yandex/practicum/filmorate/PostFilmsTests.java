@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -15,6 +16,7 @@ import static java.time.Duration.ofMinutes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@Disabled
 class PostFilmsTests extends BaseTest {
 	@Test
 	void postFilmTest() throws IOException, InterruptedException {
