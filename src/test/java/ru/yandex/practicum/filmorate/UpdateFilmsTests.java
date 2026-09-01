@@ -202,4 +202,57 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         assertEquals("application/json", contentTypeHeaderValue,
                 "Content-Type должен содержать формат данных и кодировку");
     }
+
+    @Test
+    void updateByFilmWithNullNameTest() throws IOException, InterruptedException {
+        Film film = Film.builder()
+                .id(1L)
+                .releaseDate(LocalDate.of(2018, 6, 8))
+                .duration(ofMinutes(127))
+                .description("После смерти таинственной бабушки семья Грэм начинает сталкиваться с ужасающими семейными " +
+                        "тайнами и зловещими силами, угрожающими их уничтожить.")
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(film);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/films"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(500, resp.statusCode(), "PUT /films должен вернуть 500");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
+    }
+
+    @Test
+    void updateByFilmWithBlankNameTest() throws IOException, InterruptedException {
+        Film film = Film.builder()
+                .id(1L)
+                .name("")
+                .releaseDate(LocalDate.of(2018, 6, 8))
+                .duration(ofMinutes(127))
+                .description("После смерти таинственной бабушки семья Грэм начинает сталкиваться с ужасающими семейными " +
+                        "тайнами и зловещими силами, угрожающими их уничтожить.")
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(film);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/films"))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(500, resp.statusCode(), "PUT /films должен вернуть 500");
+
+        String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals("application/json", contentTypeHeaderValue,
+                "Content-Type должен содержать формат данных и кодировку");
+    }
 }

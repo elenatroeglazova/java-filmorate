@@ -84,10 +84,8 @@ public class FilmController {
                             Продолжительность фильма {}""",
                     currentFilm.getName(), currentFilm.getDescription(),
                     currentFilm.getReleaseDate(), currentFilm.getDuration());
-            if (filmUpdate.getName() == null || filmUpdate.getReleaseDate() == null ||
-                    filmUpdate.getDescription() == null || filmUpdate.getDuration() == null) {
-                log.warn("Отсутствуют некоторые обязательные данные. Возвращает найденный фильм");
-                return currentFilm;
+            if (filmUpdate.getName() == null || filmUpdate.getName().isBlank()) {
+                throw new ValidationException("Название фильма не должно быть пустым");
             }
 
             if (filmUpdate.getDescription().length() > 200) {

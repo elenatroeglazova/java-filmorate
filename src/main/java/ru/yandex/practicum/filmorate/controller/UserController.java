@@ -77,12 +77,8 @@ public class UserController {
             User currentUser = users.get(userUpdate.getId());
             log.debug("Данные найденного пользователя: \nemail {}\n логин {}\n имя пользователя {}\nдень рождения {}",
                     currentUser.getEmail(), currentUser.getLogin(), currentUser.getName(), currentUser.getBirthday());
-            if (userUpdate.getLogin() == null || userUpdate.getEmail() == null || userUpdate.getBirthday() == null) {
-                log.warn("Отсутствуют некоторые данные пользователя. Возвращаем найденного текущего пользователя");
-                return currentUser;
-            }
 
-            if (userUpdate.getEmail().isBlank()) {
+            if (userUpdate.getEmail() == null || userUpdate.getEmail().isBlank()) {
                 throw new ValidationException("Электронная почта пользователя не должна быть пустой");
             }
 
@@ -90,7 +86,7 @@ public class UserController {
                 throw new ValidationException("Электронная почта пользователя должна содержать @");
             }
 
-            if (userUpdate.getLogin().isBlank()) {
+            if (userUpdate.getLogin() == null || userUpdate.getLogin().isBlank()) {
                 throw new ValidationException("Логин не может быть пустым");
             }
 
