@@ -17,7 +17,9 @@ public class NotEmptyObjectValidator implements ConstraintValidator<NotEmptyObje
                 if (value != null) {
                     return true;
                 }
-            } catch (IllegalAccessException ignored) {}
+            } catch (IllegalAccessException ignored) {
+
+            }
         }
         return false;
     }
