@@ -19,11 +19,11 @@ public class User {
     @NotNull(groups = OnUpdate.class, message = "ID должен быть указан")
     private Long id;
 
-    @NotBlank(groups =CommonChecks.class, message = "Электронная почта пользователя не должна быть пустой")
+    @NotBlank(groups = CommonChecks.class, message = "Электронная почта пользователя не должна быть пустой")
     @Email(groups = CommonChecks.class, message = "Почта имеет некорректный формат")
     private String email;
 
-    @NotBlank(groups =CommonChecks.class, message = "Логин не может быть пустым")
+    @NotBlank(groups = CommonChecks.class, message = "Логин не может быть пустым")
     @Pattern(groups = CommonChecks.class, regexp = "[\\w\\d]*",
             message = "Логин должен содержать только латинские буквы и цифры")
     private String login;
