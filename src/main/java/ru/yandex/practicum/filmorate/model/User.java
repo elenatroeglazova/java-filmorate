@@ -28,8 +28,8 @@ public class User {
             message = "Логин должен содержать только латинские буквы и цифры")
     private String login;
 
-    @Pattern(groups = CommonChecks.class, regexp = "\\p{L}*",
-            message = "Имя пользователя должно содержать только буквы")
+    @Pattern(groups = CommonChecks.class, regexp = "[\\p{L}\\s]*",
+            message = "Имя пользователя должно содержать буквы и пробелы")
     private String name;
 
     @Past(groups = CommonChecks.class, message = "Дата рождения не может быть в будущем")

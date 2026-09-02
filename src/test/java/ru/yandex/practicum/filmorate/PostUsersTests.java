@@ -19,7 +19,7 @@ public class PostUsersTests extends BaseTest {
         User user = User.builder()
                 .email("kinofil@email.ru")
                 .login("kinofil00")
-                .name("Dolly")
+                .name("Dolly Lolly")
                 .birthday(LocalDate.of(2000, 5, 7))
                 .build();
         String jsonBody = objectMapper.writeValueAsString(user);
