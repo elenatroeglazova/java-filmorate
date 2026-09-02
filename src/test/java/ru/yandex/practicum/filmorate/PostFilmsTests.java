@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
@@ -15,8 +13,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofMinutes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
-@Disabled
 class PostFilmsTests extends BaseTest {
 	@Test
 	void postFilmTest() throws IOException, InterruptedException {
@@ -30,7 +26,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -63,7 +59,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -88,7 +84,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -114,7 +110,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -140,7 +136,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -166,7 +162,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -192,7 +188,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -219,7 +215,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();
@@ -239,7 +235,7 @@ class PostFilmsTests extends BaseTest {
 		String jsonBody = objectMapper.writeValueAsString(film);
 
 		HttpRequest req = HttpRequest.newBuilder()
-				.uri(URI.create(BASE + "/films"))
+				.uri(URI.create(getBaseUrl() + "/films"))
 				.POST(HttpRequest.BodyPublishers.ofString(jsonBody))
 				.header("Content-Type", "application/json; charset=UTF-8")
 				.build();

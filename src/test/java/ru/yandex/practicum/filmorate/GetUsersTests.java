@@ -18,7 +18,7 @@ public class GetUsersTests extends UsersBaseTest {
     @Test
     void getUsersListTest() throws IOException, InterruptedException {
         HttpRequest getReq = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .GET()
                 .build();
 

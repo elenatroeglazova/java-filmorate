@@ -28,7 +28,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -51,7 +51,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -77,7 +77,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -104,7 +104,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -135,7 +135,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -162,7 +162,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -189,7 +189,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -215,7 +215,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -242,7 +242,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -269,7 +269,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();

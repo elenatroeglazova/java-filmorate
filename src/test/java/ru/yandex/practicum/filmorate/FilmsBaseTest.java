@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
@@ -11,12 +12,14 @@ import java.time.LocalDate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofMinutes;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
+@TestInstance(PER_CLASS)
 public class FilmsBaseTest extends BaseTest {
     protected static Film baseFilm;
 
     @BeforeAll
-    public static void createFilm() throws IOException, InterruptedException {
+    public void createFilm() throws IOException, InterruptedException {
         baseFilm = Film.builder()
                 .name("Астрал")
                 .releaseDate(LocalDate.of(2011, 4, 1))
@@ -27,7 +30,7 @@ public class FilmsBaseTest extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(baseFilm);
 
         HttpRequest postReq = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl()  + "/films"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();

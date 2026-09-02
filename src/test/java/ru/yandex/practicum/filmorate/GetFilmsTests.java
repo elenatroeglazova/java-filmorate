@@ -18,7 +18,7 @@ public class GetFilmsTests extends FilmsBaseTest {
     @Test
     void getFilmsListTest() throws IOException, InterruptedException {
         HttpRequest getReq = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/films"))
+                .uri(URI.create(getBaseUrl() + "/films"))
                 .GET()
                 .build();
 

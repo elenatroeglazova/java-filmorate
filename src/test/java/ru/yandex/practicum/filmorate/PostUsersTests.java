@@ -25,7 +25,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -49,7 +49,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -73,7 +73,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -98,7 +98,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -123,7 +123,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -148,7 +148,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -173,7 +173,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -198,7 +198,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -223,7 +223,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -247,7 +247,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -272,7 +272,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -297,7 +297,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -322,7 +322,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -346,7 +346,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -376,7 +376,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -406,7 +406,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
@@ -432,7 +432,7 @@ public class PostUsersTests extends BaseTest {
         String jsonBody = objectMapper.writeValueAsString(user);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/users"))
+                .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
