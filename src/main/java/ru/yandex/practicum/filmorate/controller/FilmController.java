@@ -21,14 +21,14 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> films() {
-        log.info("Возвращает список фильмов");
+        log.info("Получен запрос на получение всех фильмов. Всего фильмов: {}", films.size());
         log.debug("Список фильмов: {}", films.values());
         return films.values();
     }
 
     @PostMapping
     public Film create(@Validated(CreateSequence.class) @RequestBody Film film) {
-        log.info("Добавляет новый фильм");
+        log.info("Получен запрос на создание фильма с названием '{}'", film.getName());
         log.debug("""
                         Данные нового фильма:
                         Название фильма {}
@@ -39,13 +39,13 @@ public class FilmController {
 
         film.setId(IdGenerator.getNextId(films.keySet()));
         films.put(film.getId(), film);
-        log.info("Добавлен новый фильм");
+        log.info("Фильм создан: id={}, название='{}'", film.getId(), film.getName());
         return film;
     }
 
     @PutMapping
     public Film update(@Validated(UpdateSequence.class) @RequestBody Film filmUpdate) {
-        log.info("Обновляет данные фильма");
+        log.info("Получен запрос на обновление фильма с id={}", filmUpdate.getId());
         log.debug("""
                         Данные для обновления фильма:
                         Название фильма {}
@@ -71,9 +71,11 @@ public class FilmController {
             currentFilm.setName(filmUpdate.getName());
             currentFilm.setReleaseDate(filmUpdate.getReleaseDate());
             currentFilm.setDuration(filmUpdate.getDuration());
-            log.info("Данные фильма обновлены");
+            log.info("Фильм с id={} обновлен, новое название='{}'", filmUpdate.getId(), filmUpdate.getName());
             return currentFilm;
         }
+
+        log.error("Попытка обновить несуществующий фильм с id={}", filmUpdate.getId());
         throw new NotFoundException("Фильм с id = " + filmUpdate.getId() + " не найден");
     }
 }

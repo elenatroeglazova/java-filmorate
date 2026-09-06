@@ -31,6 +31,7 @@ public class Film {
     @NotBlank(groups = CommonChecks.class, message = "Название фильма не должно быть пустым")
     private String name;
 
+    @Size(groups = CommonChecks.class, min = 1, max = 200, message = "Описание не может содержать больше 200 символов")
     private String description;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -46,15 +47,6 @@ public class Film {
             return null;
         }
         return duration.toMinutes();
-    }
-
-    @JsonIgnore
-    @Max(groups = CommonChecks.class, value = 200, message = "Описание не может содержать больше 200 символов")
-    public long getDescriptionLength() {
-        if (getDescription() == null) {
-            return 0;
-        }
-        return getDescription().length();
     }
 
     @JsonIgnore
