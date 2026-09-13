@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.validation_groups.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -39,6 +41,8 @@ public class Film {
 
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
+
+    private final Set<Long> likes = new HashSet<>();
 
     @Positive(groups = CommonChecks.class, message = "Продолжиьельность фильма не может быть отрицательным числом")
     @JsonGetter("duration")

@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -70,5 +72,20 @@ public class FilmService {
 
         log.error("Попытка обновить несуществующий фильм с id={}", filmUpdate.getId());
         throw new NotFoundException("Фильм с id = " + filmUpdate.getId() + " не найден");
+    }
+
+    public void like(Long filmId, Long userId) {
+        films.get(filmId).getLikes().add(userId);
+    }
+
+    public void dislike(Long filmId, Long userId) {
+        films.get(filmId).getLikes().remove(userId);
+    }
+
+    public Collection<Film> getMostPopular() {
+        return films.values().stream()
+                .sorted(Comparator.comparing(film -> film.getLikes().size()))
+                .limit(10)
+                .collect(Collectors.toSet());
     }
 }
