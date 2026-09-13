@@ -5,19 +5,18 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.utils.IdGenerator;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final Map<Long, Film> films = new HashMap<>();
+    private final InMemoryFilmStorage films = new InMemoryFilmStorage();
 
     @GetMapping
     public Collection<Film> films() {
