@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -18,9 +19,25 @@ import java.util.Collection;
 public class UserController {
     private final UserService userService;
 
+    @GetMapping("/{id}")
+    public Optional<User> user(@PathVariable Long id) {
+        return userService.getById(id);
+    }
+
     @GetMapping
     public Collection<User> users() {
         return userService.users();
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> friends(@PathVariable Long id) {
+        return userService.friends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> mutualFriends(@PathVariable Long id,
+                                          @PathVariable Long otherId) {
+        return userService.mutualFriends(id, otherId);
     }
 
     @PostMapping
@@ -31,5 +48,17 @@ public class UserController {
     @PutMapping
     public User update(@Validated(UpdateSequence.class) @RequestBody User userUpdate) {
         return userService.update(userUpdate);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Long id,
+                          @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable Long id,
+                             @PathVariable Long friendId) {
+        userService.removeFriend(id, friendId);
     }
 }

@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -18,9 +19,19 @@ import java.util.Collection;
 public class FilmController {
     private final FilmService filmService;
 
+    @GetMapping("/{filmId}")
+    public Optional<Film> film(@PathVariable Long filmId) {
+        return filmService.getById(filmId);
+    }
+
     @GetMapping
     public Collection<Film> films() {
         return filmService.films();
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> mostPopular(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getMostPopular(count);
     }
 
     @PostMapping
@@ -31,5 +42,17 @@ public class FilmController {
     @PutMapping
     public Film update(@Validated(UpdateSequence.class) @RequestBody Film filmUpdate) {
         return filmService.update(filmUpdate);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void like(@PathVariable Long id,
+                     @PathVariable Long userId) {
+        filmService.like(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void dislike(@PathVariable Long id,
+                        @PathVariable Long userId) {
+        filmService.dislike(id, userId);
     }
 }

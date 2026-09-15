@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,6 +22,12 @@ public class FilmService {
         log.info("Получен запрос на получение всех фильмов. Всего фильмов: {}", films.size());
         log.debug("Список фильмов: {}", films.values());
         return films.values();
+    }
+
+    public Optional<Film> getById(Long id) {
+        return films.values().stream()
+                .filter(f -> f.getId().equals(id))
+                .findAny();
     }
 
     public Film create(Film film) {
@@ -75,17 +82,27 @@ public class FilmService {
     }
 
     public void like(Long filmId, Long userId) {
-        films.get(filmId).getLikes().add(userId);
+        if (films.containsKey(filmId)) {
+            films.get(filmId).getLikes().add(userId);
+        }
+
+        log.error("Попытка поставить лайк несуществующему фильму с id={}", filmId);
+        throw new NotFoundException("Фильм с id = " + filmId + " не найден");
     }
 
     public void dislike(Long filmId, Long userId) {
-        films.get(filmId).getLikes().remove(userId);
+        if (films.containsKey(filmId)) {
+            films.get(filmId).getLikes().remove(userId);
+        }
+
+        log.error("Попытка удалить лайк у несуществующего фильма с id={}", filmId);
+        throw new NotFoundException("Фильм с id = " + filmId + " не найден");
     }
 
-    public Collection<Film> getMostPopular() {
+    public Collection<Film> getMostPopular(int count) {
         return films.values().stream()
                 .sorted(Comparator.comparing(film -> film.getLikes().size()))
-                .limit(10)
+                .limit(count)
                 .collect(Collectors.toSet());
     }
 }

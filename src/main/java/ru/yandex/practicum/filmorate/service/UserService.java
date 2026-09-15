@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,12 @@ public class UserService {
         log.info("Получен запрос на получение всех пользователей. Всего пользователей: {}", users.size());
         log.debug("Список пользователей: {}", users.values());
         return users.values();
+    }
+
+    public Optional<User> getById(Long id) {
+        return users.values().stream()
+                .filter(u -> u.getId().equals(id))
+                .findAny();
     }
 
     public User create(User user) {
@@ -65,7 +72,7 @@ public class UserService {
         }
 
         log.error("Попытка обновить несуществующего пользователя с id={}", userUpdate.getId());
-        throw new NotFoundException("Фильм с id = " + userUpdate.getId() + " не найден");
+        throw new NotFoundException("Пользователь с id = " + userUpdate.getId() + " не найден");
     }
 
     public void addFriend(Long userId, Long friendId) {
@@ -76,7 +83,19 @@ public class UserService {
         users.get(userId).getFriends().remove(friendId);
     }
 
-    public Collection<User> commonFriends(Long userId, Long otherId) {
+    public Collection<User> friends(Long id) {
+        if (users.containsKey(id)) {
+            User user = users.get(id);
+            return user.getFriends().stream()
+                    .map(users::get)
+                    .collect(Collectors.toSet());
+        }
+
+        log.error("Попытка получить список друзей несуществующего пользователя с id={}", id);
+        throw new NotFoundException("Пользователь с id = " + id + " не найден");
+    }
+
+    public Collection<User> mutualFriends(Long userId, Long otherId) {
         Set<Long> intersection = new HashSet<>(users.get(userId).getFriends());
         intersection.retainAll(users.get(otherId).getFriends());
         return intersection.stream()
