@@ -83,11 +83,11 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        log.info("Получен запрос на добавление друга с id={} в список друзей пользователя с id={}", friendId, userId);
+        log.info("Получен запрос на добавление в друзья для пользователей с id={} и id={}", friendId, userId);
 
         if (userId == null || friendId == null) {
             log.error("Id пользователя или друга не может быть пустым: userId={}, friendId={}", userId, friendId);
-            throw new ValidationException("Id пользователя/друга не может быть пустым");
+            throw new ValidationException("Id пользователя не может быть пустым");
         }
 
         boolean isUserExist = users.containsKey(userId);
@@ -96,18 +96,33 @@ public class UserService {
         log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
 
         if (isUserExist && isFriendExist) {
-            users.get(userId).getFriends().add(friendId);
-            log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
+            log.trace("Список друзей до добавления: {}", users.get(userId).getFriends());
+
+            boolean isAdded = users.get(userId).getFriends().add(friendId);
+
+            log.trace("Список друзей после добавления: {}", users.get(userId).getFriends());
+            if (isAdded) {
+                log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
+            } else {
+                throw new IllegalStateException("Не удалось добавить в друзья по неизвестной причине");
+            }
+
+            isAdded = users.get(friendId).getFriends().add(userId);
+
+            log.trace("Список друзей после добавления: {}", users.get(userId).getFriends());
+            if (isAdded) {
+                log.info("Пользователь {} успешно добавил в друзья пользователя {}", friendId, userId);
+            } else {
+                throw new IllegalStateException("Не удалось добавить в друзья по неизвестной причине");
+            }
         } else {
             if (!isUserExist) {
                 log.error("Попытка добавить друга несуществующему пользователю с id={}", userId);
+                throw new NotFoundException("Пользователя с id=" + userId + " не существует");
             }
 
-            if (!isFriendExist) {
-                log.error("Попытка добавить несуществующего пользователя с id={} в друзья", friendId);
-            }
-
-            throw new NotFoundException("Передан несуществующий(ие) пользователь(ли)");
+            log.error("Попытка добавить несуществующего пользователя с id={} в друзья", friendId);
+            throw new NotFoundException("Пользователя с id=" + friendId + " не существует");
         }
     }
 
@@ -121,7 +136,6 @@ public class UserService {
 
         boolean isUserExist = users.containsKey(userId);
         boolean isFriendExist = users.containsKey(friendId);
-        boolean isFriendRemoved;
 
         log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
 
@@ -129,26 +143,32 @@ public class UserService {
             log.trace("Список друзей: {}", users.get(userId).getFriends());
             log.trace("Друг есть в списке друзей: {}", users.get(userId).getFriends().contains(friendId));
 
-            isFriendRemoved = users.get(userId).getFriends().remove(friendId);
+            boolean isFriendRemoved = users.get(userId).getFriends().remove(friendId);
+            if (isFriendRemoved) {
+                log.info("Пользователь {} успешно удалил из друзей пользователя {}", userId, friendId);
+            } else {
+                log.warn("Друг с id={} не найден в списке друзей пользователя с id={}", friendId, userId);
+            }
+
+            log.trace("Список друзей: {}", users.get(friendId).getFriends());
+            log.trace("Друг есть в списке друзей: {}", users.get(friendId).getFriends().contains(userId));
+
+            isFriendRemoved = users.get(friendId).getFriends().remove(userId);
+            if (isFriendRemoved) {
+                log.info("Пользователь {} успешно удалил из друзей пользователя {}", friendId, userId);
+            } else {
+                log.warn("Друг с id={} не найден в списке друзей пользователя с id={}", userId, friendId);
+            }
 
             log.trace("Список друзей после удаления: {}", users.get(userId).getFriends());
         } else {
             if (!isUserExist) {
                 log.error("Попытка удаления из друзей не существующего пользователя с id={}", userId);
+                throw new NotFoundException("Пользователь с id=" + userId + " не существует");
             }
 
-            if (!isFriendExist) {
-                log.error("Попытка удаления несуществующего пользователя с id={} из друзей", friendId);
-            }
-
-            throw new NotFoundException("Передан несуществующий(ие) пользователь(ли)");
-        }
-
-        if (isFriendRemoved) {
-            log.info("Пользователь {} успешно удалил из друзей пользователя {}", userId, friendId);
-        } else {
-            log.error("Друг с id={} не найден в списке друзей пользователя с id={}", friendId, userId);
-            throw new NotFoundException("Друг в списке друзей не найден");
+            log.error("Попытка удаления из друзей не существующего пользователя с id={}", friendId);
+            throw new NotFoundException("Пользователь с id=" + friendId + " не существует");
         }
     }
 

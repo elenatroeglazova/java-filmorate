@@ -87,7 +87,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(404, resp.statusCode(), "PUT /users должен вернуть 404");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,

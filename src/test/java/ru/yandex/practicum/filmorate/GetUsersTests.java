@@ -34,7 +34,7 @@ public class GetUsersTests extends UsersBaseTest {
         List<User> users = objectMapper.readValue(body, new TypeReference<>() {});
 
         boolean shouldBeKinogolikInTheList = users.stream()
-                .anyMatch(f -> f.getLogin().equals(baseUser.getLogin()));
-        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться фильм " + baseUser);
+                .anyMatch(f -> f.getLogin().equals(baseUser1.getLogin()));
+        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться фильм " + baseUser1);
     }
 }
