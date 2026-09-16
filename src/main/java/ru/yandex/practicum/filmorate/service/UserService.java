@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -26,9 +27,15 @@ public class UserService {
     }
 
     public Optional<User> getById(Long id) {
-        return users.values().stream()
+        log.debug("Поиск пользователя по id={}", id);
+        Optional<User> user = users.values().stream()
                 .filter(u -> u.getId().equals(id))
                 .findAny();
+        user.ifPresentOrElse(
+                u -> log.debug("Пользователь найден: {}", u),
+                () -> log.debug("Пользователь с id={} не найден", id)
+        );
+        return user;
     }
 
     public User create(User user) {
@@ -76,16 +83,87 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        users.get(userId).getFriends().add(friendId);
+        log.info("Получен запрос на добавление друга с id={} в список друзей пользователя с id={}", friendId, userId);
+
+        if (userId == null || friendId == null) {
+            log.error("Id пользователя или друга не может быть пустым: userId={}, friendId={}", userId, friendId);
+            throw new ValidationException("Id пользователя/друга не может быть пустым");
+        }
+
+        boolean isUserExist = users.containsKey(userId);
+        boolean isFriendExist = users.containsKey(friendId);
+
+        log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
+
+        if (isUserExist && isFriendExist) {
+            users.get(userId).getFriends().add(friendId);
+            log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
+        } else {
+            if (!isUserExist) {
+                log.error("Попытка добавить друга несуществующему пользователю с id={}", userId);
+            }
+
+            if (!isFriendExist) {
+                log.error("Попытка добавить несуществующего пользователя с id={} в друзья", friendId);
+            }
+
+            throw new NotFoundException("Передан несуществующий(ие) пользователь(ли)");
+        }
     }
 
-    public void removeFriend(long userId, Long friendId) {
-        users.get(userId).getFriends().remove(friendId);
+    public void removeFriend(Long userId, Long friendId) {
+        log.info("Получен запрос на удаление друга с id={} из списка друзей пользователя с id={}", friendId, userId);
+
+        if (userId == null || friendId == null) {
+            log.error("Id пользователя или друга не может быть пустым: userId={}, friendId={}", userId, friendId);
+            throw new ValidationException("Id пользователя/друга не может быть пустым");
+        }
+
+        boolean isUserExist = users.containsKey(userId);
+        boolean isFriendExist = users.containsKey(friendId);
+        boolean isFriendRemoved;
+
+        log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
+
+        if (isUserExist && isFriendExist) {
+            log.trace("Список друзей: {}", users.get(userId).getFriends());
+            log.trace("Друг есть в списке друзей: {}", users.get(userId).getFriends().contains(friendId));
+
+            isFriendRemoved = users.get(userId).getFriends().remove(friendId);
+
+            log.trace("Список друзей после удаления: {}", users.get(userId).getFriends());
+        } else {
+            if (!isUserExist) {
+                log.error("Попытка удаления из друзей не существующего пользователя с id={}", userId);
+            }
+
+            if (!isFriendExist) {
+                log.error("Попытка удаления несуществующего пользователя с id={} из друзей", friendId);
+            }
+
+            throw new NotFoundException("Передан несуществующий(ие) пользователь(ли)");
+        }
+
+        if (isFriendRemoved) {
+            log.info("Пользователь {} успешно удалил из друзей пользователя {}", userId, friendId);
+        } else {
+            log.error("Друг с id={} не найден в списке друзей пользователя с id={}", friendId, userId);
+            throw new NotFoundException("Друг в списке друзей не найден");
+        }
     }
 
     public Collection<User> friends(Long id) {
+        log.info("Получен запрос на получение списка друзей пользователя с id={}", id);
+
+        if (id == null) {
+            log.error("Id пользователя не может быть пустым: userId={}", id);
+            throw new ValidationException("Id пользователя не может быть пустым");
+        }
+
         if (users.containsKey(id)) {
             User user = users.get(id);
+
+            log.debug("Пользователь: {}, список друзей: {}", user, user.getFriends());
             return user.getFriends().stream()
                     .map(users::get)
                     .collect(Collectors.toSet());
@@ -96,10 +174,27 @@ public class UserService {
     }
 
     public Collection<User> mutualFriends(Long userId, Long otherId) {
-        Set<Long> intersection = new HashSet<>(users.get(userId).getFriends());
-        intersection.retainAll(users.get(otherId).getFriends());
-        return intersection.stream()
-                .map(users::get)
-                .collect(Collectors.toSet());
+        log.info("Получен запрос на просмотр общих друзей пользователей с id={}, {}", userId, otherId);
+
+        if (userId == null || otherId == null) {
+            throw new ValidationException("Id пользователей для просмотра общего списка друзей не могут быть пустыми");
+        }
+
+        boolean isUserExist = users.containsKey(userId);
+        boolean isOtherExist = users.containsKey(otherId);
+
+        log.trace("Пользователь есть в сторадже: {}, другой пользователь есть в сторадже: {}",
+                isUserExist, isOtherExist);
+
+        if (isUserExist && isOtherExist) {
+            Set<Long> intersection = new HashSet<>(users.get(userId).getFriends());
+            intersection.retainAll(users.get(otherId).getFriends());
+            return intersection.stream()
+                    .map(users::get)
+                    .collect(Collectors.toSet());
+        }
+        log.error("Попытка получить список общих друзей для несуществующего(их) пользователя(ей) с id={}, {}",
+                userId, otherId);
+        throw new NotFoundException("Передан несуществующий(ие) пользователь(ли)");
     }
 }
