@@ -15,36 +15,19 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 @TestInstance(PER_CLASS)
 public class UsersBaseTest extends BaseTest {
-    protected static User baseUser1;
-    protected static User baseUser2;
+    protected static User baseUser;
 
     @BeforeAll
-    public void createUser() throws IOException, InterruptedException {
-        baseUser1 = User.builder()
+    protected void createUser() throws IOException, InterruptedException {
+        baseUser = User.builder()
                 .email("kinogolik@email.ru")
                 .login("kinogolik")
                 .name("Котик")
                 .birthday(LocalDate.of(2005, 8, 13))
                 .build();
-        String jsonBody = objectMapper.writeValueAsString(baseUser1);
+        String jsonBody = objectMapper.writeValueAsString(baseUser);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users"))
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .build();
-
-        client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-
-        baseUser2 = User.builder()
-                .email("friendly@email.ru")
-                .login("friend")
-                .name("Дружок")
-                .birthday(LocalDate.of(2007, 4, 3))
-                .build();
-        jsonBody = objectMapper.writeValueAsString(baseUser2);
-
-        req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/users"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")

@@ -140,8 +140,9 @@ public class UserService {
         log.trace("Пользователь есть в сторадже: {}, друг есть в сторадже: {}", isUserExist, isFriendExist);
 
         if (isUserExist && isFriendExist) {
-            log.trace("Список друзей: {}", users.get(userId).getFriends());
-            log.trace("Друг есть в списке друзей: {}", users.get(userId).getFriends().contains(friendId));
+            log.trace("Список друзей пользователя с id={} до удаления: {}", userId, users.get(userId).getFriends());
+            log.trace("Друг с id={} есть в списке друзей пользователя с id={}: {}",
+                    friendId, userId, users.get(userId).getFriends().contains(friendId));
 
             boolean isFriendRemoved = users.get(userId).getFriends().remove(friendId);
             if (isFriendRemoved) {
@@ -150,8 +151,10 @@ public class UserService {
                 log.warn("Друг с id={} не найден в списке друзей пользователя с id={}", friendId, userId);
             }
 
-            log.trace("Список друзей: {}", users.get(friendId).getFriends());
-            log.trace("Друг есть в списке друзей: {}", users.get(friendId).getFriends().contains(userId));
+            log.trace("Список друзей пользователя с id={} после удаления: {}", userId, users.get(userId).getFriends());
+            log.trace("Список друзей пользователя с id={} до удаления: {}", friendId, users.get(friendId).getFriends());
+            log.trace("Друг с id={} есть в списке друзей пользователя с id={}: {}",
+                    userId, friendId, users.get(friendId).getFriends().contains(userId));
 
             isFriendRemoved = users.get(friendId).getFriends().remove(userId);
             if (isFriendRemoved) {
@@ -160,7 +163,7 @@ public class UserService {
                 log.warn("Друг с id={} не найден в списке друзей пользователя с id={}", userId, friendId);
             }
 
-            log.trace("Список друзей после удаления: {}", users.get(userId).getFriends());
+            log.trace("Список друзей пользователя с id={} после удаления: {}", friendId, users.get(friendId).getFriends());
         } else {
             if (!isUserExist) {
                 log.error("Попытка удаления из друзей не существующего пользователя с id={}", userId);

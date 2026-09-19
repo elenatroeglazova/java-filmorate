@@ -27,7 +27,7 @@ public class User {
     private String email;
 
     @NotBlank(groups = CommonChecks.class, message = "Логин не может быть пустым")
-    @Pattern(groups = CommonChecks.class, regexp = "[\\w\\d]*",
+    @Pattern(groups = CommonChecks.class, regexp = "[\\w]*",
             message = "Логин должен содержать только латинские буквы и цифры")
     private String login;
 
@@ -38,6 +38,5 @@ public class User {
     @Past(groups = CommonChecks.class, message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    @JsonIgnore
     private final Set<Long> friends = new HashSet<>();
 }
