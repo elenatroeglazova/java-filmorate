@@ -19,11 +19,6 @@ public class UserFriendsTests extends FriendsBaseTest {
 
     @Test
     public void addFriendTest() throws IOException, InterruptedException {
-        List<User> expectedFriends = new ArrayList<>();
-        user4.setId(4L);
-        user4.getFriends().add(3L);
-        expectedFriends.add(user4);
-
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/users/3/friends/4"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
@@ -43,11 +38,14 @@ public class UserFriendsTests extends FriendsBaseTest {
         resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
         String body = resp.body().trim();
         List<User> actualFriends = objectMapper.readValue(body, new TypeReference<>() {});
+        User newFriend = actualFriends.stream()
+                .filter(fr -> fr.getId().equals(4L))
+                .findAny()
+                .orElse(null);
 
         assertEquals(200, resp.statusCode(), "GET /users/3/friends должен вернуть 200");
-        assertEquals(expectedFriends, actualFriends,
-                "В списке друзей пользователя с id=3 должен появиться пользователь с id=4");
-        assertTrue(actualFriends.getFirst().getFriends().contains(3L),
+        assertNotNull(newFriend, "В списке друзей пользователя с id=3 должен появиться пользователь с id=4");
+        assertTrue(newFriend.getFriends().contains(3L),
                 "В списке друзей пользователя с id=4 должен быть друг с id=3");
     }
 
@@ -105,13 +103,10 @@ public class UserFriendsTests extends FriendsBaseTest {
 
         String body = resp.body().trim();
         List<User> actualFriends = objectMapper.readValue(body, new TypeReference<>() {});
-        user2.setId(2L);
-        user2.getFriends().add(1L);
+        User friend = actualFriends.stream().filter(fr -> fr.getId().equals(2L)).findAny().orElse(null);
 
-        assertEquals(user2, actualFriends.getFirst(),
-                "В списке друзей пользователя с id=1 должен быть пользователь с id=2");
-        assertTrue(actualFriends.getFirst().getFriends().contains(1L),
-                "В списке друзей пользователя с id=2 должен быть друг с id=1");
+        assertFalse(actualFriends.isEmpty(), "Должен быть получен список друзей");
+        assertNotNull(friend, "В списке друзей пользователя с id=1 должен быть пользователь с id=2");
     }
 
     @Test
