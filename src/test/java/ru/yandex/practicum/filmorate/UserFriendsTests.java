@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.base.FriendsBaseTest;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.io.IOException;

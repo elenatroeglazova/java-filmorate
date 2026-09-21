@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.base.BaseTest;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.io.IOException;

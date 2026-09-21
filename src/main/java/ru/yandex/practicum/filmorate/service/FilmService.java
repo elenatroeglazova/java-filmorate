@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.utils.IdGenerator;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Slf4j

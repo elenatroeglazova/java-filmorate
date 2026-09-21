@@ -1,34 +1,57 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.base;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.LocalDate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
+import static java.time.Duration.ofMinutes;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@TestInstance(PER_CLASS)
-public class FriendsBaseTest extends BaseTest {
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+public abstract class BaseTest {
+    @LocalServerPort
+    protected int port;
+
+    @Autowired
+    protected ObjectMapper objectMapper;
+
+    protected static HttpClient client;
     protected static User user1;
     protected static User user2;
     protected static User user3;
     protected static User user4;
     protected static User user5;
     protected static User user6;
+    protected static Film film1;
+    protected static Film film2;
+    protected static Film film3;
+    protected static Film film4;
 
     @BeforeAll
-    protected void setUp() throws IOException, InterruptedException {
-        createUsers();
-        addFriends();
+    static void beforeAll() {
+        client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build();
     }
 
-    private void createUsers() throws IOException, InterruptedException {
+    protected String getBaseUrl() {
+        return "http://localhost:" + port;
+    }
+
+    protected void createUsers() throws IOException, InterruptedException {
         user1 = User.builder()
                 .email("user1@email.ru")
                 .login("user1")
@@ -126,37 +149,73 @@ public class FriendsBaseTest extends BaseTest {
         client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
     }
 
-    private void addFriends() throws IOException, InterruptedException {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/1/friends/2"))
-                .PUT(HttpRequest.BodyPublishers.noBody())
+    protected void createFilms() throws IOException, InterruptedException {
+        film1 = Film.builder()
+                .name("Астрал")
+                .releaseDate(LocalDate.of(2011, 4, 1))
+                .duration(ofMinutes(102))
+                .description("Семья переезжает в новый дом, но вскоре их сын впадает в кому, а его тело становится " +
+                        "порталом для злых духов из потустороннего мира.")
+                .build();
+        String jsonBody = objectMapper.writeValueAsString(film1);
+
+        HttpRequest postReq = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl()  + "/films"))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
-        client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+        client.send(postReq, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/5/friends/6"))
-                .PUT(HttpRequest.BodyPublishers.noBody())
+        film2 = Film.builder()
+                .name("Изгоняющий дьявола")
+                .releaseDate(LocalDate.of(1973, 12, 26))
+                .duration(ofMinutes(122))
+                .description("Мать обращается за помощью к священникам, когда её дочь-подросток начинает проявлять " +
+                        "жуткие признаки демонической одержимости.")
+                .build();
+        jsonBody = objectMapper.writeValueAsString(film2);
+
+        postReq = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl()  + "/films"))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
-        client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+        client.send(postReq, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/5/friends/1"))
-                .PUT(HttpRequest.BodyPublishers.noBody())
+        film3 = Film.builder()
+                .name("Техасская резня бензопилой")
+                .releaseDate(LocalDate.of(1974, 10, 1))
+                .duration(ofMinutes(83))
+                .description("Группа друзей становится жертвами семьи каннибалов в Техасе, психопата с бензопилой " +
+                        "по кличке Кожаное Лицо.")
+                .build();
+        jsonBody = objectMapper.writeValueAsString(film3);
+
+        postReq = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl()  + "/films"))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
-        client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+        client.send(postReq, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/6/friends/1"))
-                .PUT(HttpRequest.BodyPublishers.noBody())
+        film4 = Film.builder()
+                .name("Сияние")
+                .releaseDate(LocalDate.of(1980, 5, 23))
+                .duration(ofMinutes(146))
+                .description("Писатель устраивается смотрителем в горный отель на зиму, где из-за изоляции и " +
+                        "сверхъестественных сил его безумие приводит к насилию.")
+                .build();
+        jsonBody = objectMapper.writeValueAsString(film4);
+
+        postReq = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl()  + "/films"))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
-        client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+        client.send(postReq, HttpResponse.BodyHandlers.ofString(UTF_8));
     }
 }
