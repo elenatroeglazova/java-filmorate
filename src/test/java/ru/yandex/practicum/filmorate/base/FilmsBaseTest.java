@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.base;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
-import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
 
