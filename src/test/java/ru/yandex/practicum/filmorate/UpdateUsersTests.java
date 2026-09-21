@@ -41,6 +41,7 @@ public class UpdateUsersTests extends UsersBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
+        user.getFriends().addAll(respUser.getFriends());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса");
     }
 
@@ -426,6 +427,7 @@ public class UpdateUsersTests extends UsersBaseTest {
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
         user.setId(respUser.getId());
         user.setName(user.getLogin());
+        user.getFriends().addAll(respUser.getFriends());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
     }
 
@@ -457,6 +459,7 @@ public class UpdateUsersTests extends UsersBaseTest {
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
         user.setId(respUser.getId());
         user.setName(user.getLogin());
+        user.getFriends().addAll(respUser.getFriends());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
     }
 

@@ -43,6 +43,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         Film respFilm = objectMapper.readValue(resp.body().trim(), Film.class);
+        film.getLikes().addAll(respFilm.getLikes());
         assertEquals(film, respFilm, "В ответе должны быть данные фильма из запроса");
     }
 

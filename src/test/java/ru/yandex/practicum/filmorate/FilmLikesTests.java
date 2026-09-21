@@ -28,7 +28,7 @@ public class FilmLikesTests extends LikesBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(200, resp.statusCode(), "PUT /films/{id}/like/{userId} должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "PUT /films/1/like/1 должен вернуть 200");
 
         req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/films"))
@@ -56,27 +56,27 @@ public class FilmLikesTests extends LikesBaseTest {
     @Test
     public void addLikeToUnknownFilmTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/films/5/like/1"))
+                .uri(URI.create(getBaseUrl() + "/films/999/like/1"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "PUT /films/{id}/like/{userId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "PUT /films/999/like/1 должен вернуть 404");
     }
 
     @Test
     public void addLikeFromUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/films/1/like/7"))
+                .uri(URI.create(getBaseUrl() + "/films/1/like/999"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "PUT /films/{id}/like/{userId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "PUT /films/1/like/999 должен вернуть 404");
 
         req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/films"))
@@ -107,7 +107,7 @@ public class FilmLikesTests extends LikesBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(200, resp.statusCode(), "DELETE /films/{id}/like/{userId} должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "DELETE /films/2/like/1 должен вернуть 200");
 
         req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/films"))
@@ -131,27 +131,27 @@ public class FilmLikesTests extends LikesBaseTest {
     @Test
     public void removeLikeForUnknownFilmTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/films/5/like/1"))
+                .uri(URI.create(getBaseUrl() + "/films/999/like/1"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "DELETE /films/{id}/like/{userId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /films/999/like/1 должен вернуть 404");
     }
 
     @Test
     public void removeLikeFromUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/films/2/like/7"))
+                .uri(URI.create(getBaseUrl() + "/films/2/like/999"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "DELETE /films/{id}/like/{userId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /films/2/like/999 должен вернуть 404");
     }
 
     @Test

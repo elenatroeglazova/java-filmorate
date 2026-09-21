@@ -32,7 +32,7 @@ public class UserFriendsTests extends FriendsBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(200, resp.statusCode(), "PUT /users/{id}/friends/{friendId} должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "PUT /users/3/friends/4 должен вернуть 200");
 
         req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/users/3/friends"))
@@ -44,7 +44,7 @@ public class UserFriendsTests extends FriendsBaseTest {
         String body = resp.body().trim();
         List<User> actualFriends = objectMapper.readValue(body, new TypeReference<>() {});
 
-        assertEquals(200, resp.statusCode(), "GET /users/{id}/friends должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "GET /users/3/friends должен вернуть 200");
         assertEquals(expectedFriends, actualFriends,
                 "В списке друзей пользователя с id=3 должен появиться пользователь с id=4");
         assertTrue(actualFriends.getFirst().getFriends().contains(3L),
@@ -54,14 +54,14 @@ public class UserFriendsTests extends FriendsBaseTest {
     @Test
     public void addUnknownIdFriendTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/3/friends/7"))
+                .uri(URI.create(getBaseUrl() + "/users/3/friends/999"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "PUT /users/{id}/friends/{friendId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "PUT /users/3/friends/999 должен вернуть 404");
 
         req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/users/3/friends"))
@@ -70,7 +70,7 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .build();
 
         resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(200, resp.statusCode(), "GET /users/{id}/friends должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "GET /users/3/friends должен вернуть 200");
 
         String body = resp.body().trim();
         List<User> actualFriends = objectMapper.readValue(body, new TypeReference<>() {});
@@ -82,14 +82,14 @@ public class UserFriendsTests extends FriendsBaseTest {
     @Test
     public void addFriendForUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/7/friends/3"))
+                .uri(URI.create(getBaseUrl() + "/users/999/friends/3"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "PUT /users/{id}/friends/{friendId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "PUT /users/999/friends/3 должен вернуть 404");
     }
 
     @Test
@@ -101,7 +101,7 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(200, resp.statusCode(), "GET /users/{id}/friends должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "GET /users/1/friends должен вернуть 200");
 
         String body = resp.body().trim();
         List<User> actualFriends = objectMapper.readValue(body, new TypeReference<>() {});
@@ -117,13 +117,13 @@ public class UserFriendsTests extends FriendsBaseTest {
     @Test
     public void getUnknownIdFriendsTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/7/friends"))
+                .uri(URI.create(getBaseUrl() + "/users/999/friends"))
                 .GET()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(404, resp.statusCode(), "GET /users/{id}/friends должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "GET /users/999/friends должен вернуть 404");
     }
 
     @Test
@@ -135,7 +135,7 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(200, resp.statusCode(), "DELETE /users/{id}/friends/{friendId} должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "DELETE /users/5/friends/6 должен вернуть 200");
 
         req = HttpRequest.newBuilder()
                 .uri(URI.create(getBaseUrl() + "/users/5/friends"))
@@ -167,25 +167,25 @@ public class UserFriendsTests extends FriendsBaseTest {
     @Test
     public void removeUnknownIdFriendTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/5/friends/7"))
+                .uri(URI.create(getBaseUrl() + "/users/5/friends/999"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(404, resp.statusCode(), "DELETE /users/{id}/friends/{friendId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /users/5/friends/999 должен вернуть 404");
     }
 
     @Test
     public void removeFriendForUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/7/friends/5"))
+                .uri(URI.create(getBaseUrl() + "/users/999/friends/5"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(404, resp.statusCode(), "DELETE /users/{id}/friends/{friendId} должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /users/999/friends/5 должен вернуть 404");
     }
 
     @Test
@@ -197,7 +197,7 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(200, resp.statusCode(), "DELETE /users/{id}/friends/{friendId} должен вернуть 200");
+        assertEquals(200, resp.statusCode(), "DELETE /users/5/friends/3 должен вернуть 200");
     }
 
     @Test
@@ -210,7 +210,7 @@ public class UserFriendsTests extends FriendsBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
         assertEquals(200, resp.statusCode(),
-                "GET /users/{id}/friends/common/{otherId} должен вернуть 200");
+                "GET /users/5/friends/common/6 должен вернуть 200");
         String body = resp.body().trim();
         List<User> mutualFriend = objectMapper.readValue(body, new TypeReference<>() {});
 
@@ -219,5 +219,18 @@ public class UserFriendsTests extends FriendsBaseTest {
         assertEquals(1, mutualFriend.size(), "У пользователей с id=5 и id=6 только один общий друг");
         assertEquals(1L, mutualFriend.getFirst().getId(),
                 "Id общего друга пользователей с id=5 и id=6 должен равняться 1");
+    }
+
+    @Test
+    public void getMutualFriendsWithUnknownUserTest() throws IOException, InterruptedException {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl() + "/users/5/friends/common/999"))
+                .GET()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+        assertEquals(404, resp.statusCode(),
+                "GET /users/5/friends/common/999 должен вернуть 404");
     }
 }
