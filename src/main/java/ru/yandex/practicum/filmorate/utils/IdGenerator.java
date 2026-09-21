@@ -8,7 +8,7 @@ public class IdGenerator {
                 .stream()
                 .mapToLong(id -> id)
                 .max()
-                .orElse(0);
+                .orElse(-1);
         return ++currentMaxId;
     }
 }

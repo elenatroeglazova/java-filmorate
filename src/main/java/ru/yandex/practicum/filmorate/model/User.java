@@ -30,7 +30,7 @@ public class User {
             message = "Логин должен содержать только латинские буквы и цифры")
     private String login;
 
-    @Pattern(groups = CommonChecks.class, regexp = "[\\p{L}\\s]*",
+    @Pattern(groups = CommonChecks.class, regexp = "[\\p{L}\\s.']*",
             message = "Имя пользователя должно содержать буквы и пробелы")
     private String name;
 
