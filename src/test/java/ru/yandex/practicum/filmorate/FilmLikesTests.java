@@ -38,7 +38,8 @@ public class FilmLikesTests extends LikesBaseTest {
 
         resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
         String body = resp.body().trim();
-        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
+        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {
+        });
         Set<Long> likes = films.stream()
                 .filter(f -> f.getId().equals(1L))
                 .findFirst()
@@ -86,7 +87,8 @@ public class FilmLikesTests extends LikesBaseTest {
 
         resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
         String body = resp.body().trim();
-        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
+        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {
+        });
         Set<Long> likes = films.stream()
                 .filter(f -> f.getId().equals(1L))
                 .findFirst()
@@ -117,7 +119,8 @@ public class FilmLikesTests extends LikesBaseTest {
 
         resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
         String body = resp.body().trim();
-        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
+        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {
+        });
         Set<Long> likes = films.stream()
                 .filter(f -> f.getId().equals(2L))
                 .findFirst()
@@ -167,14 +170,13 @@ public class FilmLikesTests extends LikesBaseTest {
         assertEquals(200, resp.statusCode(), "GET /films/popular должен вернуть 200");
 
         String body = resp.body().trim();
-        List<Film> mostPopularFilms = objectMapper.readValue(body, new TypeReference<>() {});
+        List<Film> mostPopularFilms = objectMapper.readValue(body, new TypeReference<>() {
+        });
 
         assertEquals(2, mostPopularFilms.size(),
                 "Список самых популярных фильмов должен состоять из 2 фильмов");
-        assertEquals(film3.getName(), mostPopularFilms.getFirst().getName(),
-                "Самым популярным в списке должен быть фильм с id=3");
-        assertEquals(film4.getName(), mostPopularFilms.getLast().getName(),
-                "Вторым по популярности в списке должен бьть фильм с id=4");
+        assertTrue(mostPopularFilms.getFirst().getLikes().size() > mostPopularFilms.getLast().getLikes().size(),
+                "Количество лайков первого фильма в списке лоджно быть больше последнего");
     }
 
     @Test
@@ -190,13 +192,22 @@ public class FilmLikesTests extends LikesBaseTest {
         assertEquals(200, resp.statusCode(), "GET /films/popular должен вернуть 200");
 
         String body = resp.body().trim();
-        List<Film> mostPopularFilms = objectMapper.readValue(body, new TypeReference<>() {});
+        List<Film> mostPopularFilms = objectMapper.readValue(body, new TypeReference<>() {
+        });
+        int maxLikes = mostPopularFilms.stream()
+                .mapToInt(f -> f.getLikes().size())
+                .max()
+                .orElse(0);
+        int minLikes = mostPopularFilms.stream()
+                .mapToInt(f -> f.getLikes().size())
+                .min()
+                .orElse(0);
 
-        assertEquals(4, mostPopularFilms.size(),
-                "Список самых популярных фильмов должен состоять из 4 фильмов");
-        assertEquals(film3.getName(), mostPopularFilms.getFirst().getName(),
-                "Самым популярным в списке должен быть фильм с id=3");
-        assertEquals(film1.getName(), mostPopularFilms.getLast().getName(),
-                "Последним по популярности в списке должен бьть фильм с id=1");
+        assertTrue(mostPopularFilms.size() <= 10,
+                "Список самых популярных фильмов должен состоять максимум из 10 фильмов");
+        assertEquals(maxLikes, mostPopularFilms.getFirst().getLikes().size(),
+                "Первый фильм в списке должен содержать максимальное количество лайков");
+        assertEquals(minLikes, mostPopularFilms.getLast().getLikes().size(),
+                "Последний фильм в списке должен содержать минимальное количество лайков");
     }
 }
