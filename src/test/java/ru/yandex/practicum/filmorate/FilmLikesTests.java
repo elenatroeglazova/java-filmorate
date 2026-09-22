@@ -45,13 +45,10 @@ public class FilmLikesTests extends LikesBaseTest {
                 .findFirst()
                 .map(Film::getLikes)
                 .orElse(new HashSet<>());
-        Set<Long> expectedLikes = new HashSet<>();
-        expectedLikes.add(1L);
 
         assertFalse(likes.isEmpty(), "Список лайков фильма с id=1 не должен быть пустым");
         assertEquals(1, likes.size(), "Количество лайков фильма с id=1 должно быть равно 1");
-        assertEquals(expectedLikes, likes,
-                "Список лайков фильма с id=1 должен содержать лайк пользователя с id=1");
+        assertTrue(likes.contains(1L), "Список лайков фильма с id=1 должен содержать лайк пользователя с id=1");
     }
 
     @Test
@@ -95,8 +92,8 @@ public class FilmLikesTests extends LikesBaseTest {
                 .map(Film::getLikes)
                 .orElse(new HashSet<>());
 
-        assertTrue(likes.isEmpty() || !likes.contains(7L),
-                "Список лайков фильма с id=1 не должен содержать лайк от пользователя с id=7");
+        assertTrue(likes.isEmpty() || !likes.contains(999L),
+                "Список лайков фильма с id=1 не должен содержать лайк от пользователя с id=999");
     }
 
     @Test
@@ -122,7 +119,7 @@ public class FilmLikesTests extends LikesBaseTest {
         List<Film> films = objectMapper.readValue(body, new TypeReference<>() {
         });
         Set<Long> likes = films.stream()
-                .filter(f -> f.getId().equals(2L))
+                .filter(f -> f.getId().equals(1L))
                 .findFirst()
                 .map(Film::getLikes)
                 .orElse(new HashSet<>());
@@ -147,14 +144,14 @@ public class FilmLikesTests extends LikesBaseTest {
     @Test
     public void removeLikeFromUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/films/2/like/999"))
+                .uri(URI.create(getBaseUrl() + "/films/1/like/999"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "DELETE /films/2/like/999 должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /films/1/like/999 должен вернуть 404");
     }
 
     @Test

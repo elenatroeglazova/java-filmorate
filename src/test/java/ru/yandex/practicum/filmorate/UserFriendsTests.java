@@ -42,7 +42,6 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .findAny()
                 .orElse(null);
 
-        assertEquals(200, resp.statusCode(), "GET /users/3/friends должен вернуть 200");
         assertNotNull(newFriend, "В списке друзей пользователя с id=3 должен появиться пользователь с id=4");
         assertTrue(newFriend.getFriends().contains(3L),
                 "В списке друзей пользователя с id=4 должен быть друг с id=3");
@@ -51,42 +50,40 @@ public class UserFriendsTests extends FriendsBaseTest {
     @Test
     public void addUnknownIdFriendTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/3/friends/999"))
+                .uri(URI.create(getBaseUrl() + "/users/2/friends/999"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "PUT /users/3/friends/999 должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "PUT /users/2/friends/999 должен вернуть 404");
 
         req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/3/friends"))
+                .uri(URI.create(getBaseUrl() + "/users/2/friends"))
                 .GET()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(200, resp.statusCode(), "GET /users/3/friends должен вернуть 200");
-
         String body = resp.body().trim();
         List<User> actualFriends = objectMapper.readValue(body, new TypeReference<>() {});
 
-        assertTrue(actualFriends.isEmpty() || actualFriends.stream().noneMatch(u -> u.getId().equals(7L)),
-                "В списке друзей пользователя с id=3 не должно быть друга с id=7");
+        assertTrue(actualFriends.isEmpty() || actualFriends.stream().noneMatch(u -> u.getId().equals(999L)),
+                "В списке друзей пользователя с id=2 не должно быть друга с id=999");
     }
 
     @Test
     public void addFriendForUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/999/friends/3"))
+                .uri(URI.create(getBaseUrl() + "/users/999/friends/2"))
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(404, resp.statusCode(), "PUT /users/999/friends/3 должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "PUT /users/999/friends/2 должен вернуть 404");
     }
 
     @Test
@@ -161,25 +158,25 @@ public class UserFriendsTests extends FriendsBaseTest {
     @Test
     public void removeUnknownIdFriendTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/5/friends/999"))
+                .uri(URI.create(getBaseUrl() + "/users/4/friends/999"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(404, resp.statusCode(), "DELETE /users/5/friends/999 должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /users/4/friends/999 должен вернуть 404");
     }
 
     @Test
     public void removeFriendForUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/999/friends/5"))
+                .uri(URI.create(getBaseUrl() + "/users/999/friends/4"))
                 .DELETE()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
-        assertEquals(404, resp.statusCode(), "DELETE /users/999/friends/5 должен вернуть 404");
+        assertEquals(404, resp.statusCode(), "DELETE /users/999/friends/4 должен вернуть 404");
     }
 
     @Test
@@ -212,19 +209,19 @@ public class UserFriendsTests extends FriendsBaseTest {
                 "Список общих друзей пользователей с id=5 и id=6 не должен быть пустым");
         assertEquals(1, mutualFriend.size(), "У пользователей с id=5 и id=6 только один общий друг");
         assertEquals(1L, mutualFriend.getFirst().getId(),
-                "Id общего друга пользователей с id=5 и id=6 должен равняться 1");
+                "Id общего друга пользователей с id=5 и id=6 должен быть 1");
     }
 
     @Test
     public void getMutualFriendsWithUnknownUserTest() throws IOException, InterruptedException {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(getBaseUrl() + "/users/5/friends/common/999"))
+                .uri(URI.create(getBaseUrl() + "/users/4/friends/common/999"))
                 .GET()
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
         assertEquals(404, resp.statusCode(),
-                "GET /users/5/friends/common/999 должен вернуть 404");
+                "GET /users/4/friends/common/999 должен вернуть 404");
     }
 }

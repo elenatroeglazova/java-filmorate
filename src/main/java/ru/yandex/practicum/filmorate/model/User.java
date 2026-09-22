@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validation_groups.*;
 
 import java.time.LocalDate;
@@ -37,5 +34,6 @@ public class User {
     @Past(groups = CommonChecks.class, message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
+    @EqualsAndHashCode.Exclude
     private final Set<Long> friends = new HashSet<>();
 }
