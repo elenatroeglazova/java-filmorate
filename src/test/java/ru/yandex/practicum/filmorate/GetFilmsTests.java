@@ -2,13 +2,14 @@ package ru.yandex.practicum.filmorate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,10 +32,8 @@ public class GetFilmsTests extends FilmsBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         String body = resp.body().trim();
-        List<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
+        Set<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
 
-        boolean shouldBeAstralInTheList = films.stream()
-                .anyMatch(f -> f.getName().equals(baseFilm.getName()));
-        assertTrue(shouldBeAstralInTheList, "В списке должен появиться фильм " + baseFilm);
+        assertTrue(films.stream().anyMatch(f -> f.getName().equals("Кошмар на улице Вязов")));
     }
 }

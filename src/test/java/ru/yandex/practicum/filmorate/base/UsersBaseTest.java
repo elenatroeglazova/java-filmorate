@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.base;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -15,15 +15,15 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 @TestInstance(PER_CLASS)
 public class UsersBaseTest extends BaseTest {
-    protected static User baseUser;
+    protected User baseUser;
 
     @BeforeAll
-    public void createFilm() throws IOException, InterruptedException {
+    protected void setUp() throws IOException, InterruptedException {
         baseUser = User.builder()
-                .email("kinogolik@email.ru")
-                .login("kinogolik")
-                .name("Котик")
-                .birthday(LocalDate.of(2005, 8, 13))
+                .email("baseUser@email.ru")
+                .login("baseUser")
+                .name("Базовый пользователь")
+                .birthday(LocalDate.of(2015, 8, 13))
                 .build();
         String jsonBody = objectMapper.writeValueAsString(baseUser);
 

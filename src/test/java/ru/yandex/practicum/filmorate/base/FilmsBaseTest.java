@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.base;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -16,16 +16,16 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 @TestInstance(PER_CLASS)
 public class FilmsBaseTest extends BaseTest {
-    protected static Film baseFilm;
+    protected Film baseFilm;
 
     @BeforeAll
-    public void createFilm() throws IOException, InterruptedException {
+    public void setUp() throws IOException, InterruptedException {
         baseFilm = Film.builder()
-                .name("Астрал")
-                .releaseDate(LocalDate.of(2011, 4, 1))
-                .duration(ofMinutes(102))
-                .description("Семья переезжает в новый дом, но вскоре их сын впадает в кому, а его тело становится " +
-                        "порталом для злых духов из потустороннего мира.")
+                .name("Кошмар на улице Вязов")
+                .releaseDate(LocalDate.of(1984, 11, 9))
+                .duration(ofMinutes(91))
+                .description("Подростки из одного района сталкиваются с Фредди Крюгером — маньяком с перчаткой-лезвием, " +
+                        "который убивает своих жертв в их снах.")
                 .build();
         String jsonBody = objectMapper.writeValueAsString(baseFilm);
 

@@ -4,16 +4,15 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.jackson.deserializers.DurationDeserializer;
 import ru.yandex.practicum.filmorate.validation_groups.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -39,6 +38,9 @@ public class Film {
 
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
+
+    @EqualsAndHashCode.Exclude
+    private final Set<Long> likes = new HashSet<>();
 
     @Positive(groups = CommonChecks.class, message = "Продолжиьельность фильма не может быть отрицательным числом")
     @JsonGetter("duration")
