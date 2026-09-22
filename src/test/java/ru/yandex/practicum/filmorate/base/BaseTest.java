@@ -100,7 +100,7 @@ public abstract class BaseTest {
                 .build());
     }
 
-    private void postFilm (Film film) throws IOException, InterruptedException {
+    private void postFilm(Film film) throws IOException, InterruptedException {
         String jsonBody = objectMapper.writeValueAsString(film);
 
         HttpRequest postReq = HttpRequest.newBuilder()
