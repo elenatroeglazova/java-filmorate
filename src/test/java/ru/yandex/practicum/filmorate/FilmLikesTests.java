@@ -207,4 +207,17 @@ public class FilmLikesTests extends LikesBaseTest {
         assertEquals(minLikes, mostPopularFilms.getLast().getLikes().size(),
                 "Последний фильм в списке должен содержать минимальное количество лайков");
     }
+
+    @Test
+    public void getMostPopularNegativeCountTest() throws IOException, InterruptedException {
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(getBaseUrl() + "/films/popular?count=-2"))
+                .GET()
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .build();
+
+        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
+
+        assertEquals(400, resp.statusCode(), "GET /films/popular должен вернуть 400");
+    }
 }

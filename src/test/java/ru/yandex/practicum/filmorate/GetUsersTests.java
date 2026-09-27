@@ -36,6 +36,6 @@ public class GetUsersTests extends UsersBaseTest {
 
         boolean shouldBeKinogolikInTheList = users.stream()
                 .anyMatch(f -> f.getLogin().equals(baseUser.getLogin()));
-        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться фильм " + baseUser);
+        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться пользователь " + baseUser);
     }
 }

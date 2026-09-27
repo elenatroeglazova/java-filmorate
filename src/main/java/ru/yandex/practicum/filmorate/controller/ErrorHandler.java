@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -23,6 +24,14 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        return ErrorResponse.builder()
+                .error(ex.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentNotValid(ConstraintViolationException ex) {
         return ErrorResponse.builder()
                 .error(ex.getMessage())
                 .build();

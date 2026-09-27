@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
+@Validated
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
@@ -30,7 +32,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> mostPopular(@RequestParam(defaultValue = "10") int count) {
+    public Collection<Film> mostPopular(@RequestParam(defaultValue = "10")
+                                            @Positive(message = "Количество фильмов должно быть больше 0") int count) {
         return filmService.getMostPopular(count);
     }
 
