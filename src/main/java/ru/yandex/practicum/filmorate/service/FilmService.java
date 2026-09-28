@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -20,7 +18,7 @@ import java.util.stream.Collectors;
 @Getter
 @RequiredArgsConstructor
 public class FilmService {
-    private final FilmStorage films = new InMemoryFilmStorage();
+    private final FilmStorage films;
     private final UserService userService;
 
     public Collection<Film> films() {
@@ -52,8 +50,7 @@ public class FilmService {
                         Продолжительность фильма {}""",
                 film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
 
-        film.setId(IdGenerator.getNextId(films.ids()));
-        films.create(film.getId(), film);
+        films.create(film);
         log.info("Фильм создан: id={}, название='{}'", film.getId(), film.getName());
         return film;
     }

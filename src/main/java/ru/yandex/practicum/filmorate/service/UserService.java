@@ -1,13 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,8 +17,9 @@ import java.util.stream.Collectors;
 @Getter
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage users = new InMemoryUserStorage();
+    private final UserStorage users;
 
     public Collection<User> users() {
         log.info("Получен запрос на получение всех пользователей. Всего пользователей: {}", users.findAll().size());
@@ -48,9 +48,7 @@ public class UserService {
             log.warn("Имя пользователя пустое, будет использован логин '{}'", user.getLogin());
             user.setName(user.getLogin());
         }
-
-        user.setId(IdGenerator.getNextId(users.ids()));
-        users.create(user.getId(), user);
+        users.create(user);
         log.info("Пользователь создан: id={}, логин='{}'", user.getId(), user.getLogin());
         return user;
     }

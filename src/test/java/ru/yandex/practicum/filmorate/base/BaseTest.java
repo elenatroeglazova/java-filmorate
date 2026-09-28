@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -62,16 +61,14 @@ public abstract class BaseTest {
     protected void createUsers() {
 
         for (int i = 0; i < 6; i++) {
-            Long id = IdGenerator.getNextId(userStorage.ids());
             User user = User.builder()
-                    .id(id)
                     .email("user" + i + "@email.ru")
                     .login("user1")
                     .name("Пользователь Один")
                     .birthday(LocalDate.of(2015, 8, 13))
                     .build();
 
-            userStorage.create(id, user);
+            userStorage.create(user);
             testUsers.add(user);
         }
     }
@@ -111,9 +108,7 @@ public abstract class BaseTest {
     }
 
     private void storageFilm(Film film) {
-        Long id = IdGenerator.getNextId(filmStorage.ids());
-        film.setId(id);
-        filmStorage.create(id, film);
+        filmStorage.create(film);
         testFilms.add(film);
     }
 

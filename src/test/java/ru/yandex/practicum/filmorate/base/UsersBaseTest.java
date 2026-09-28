@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.base;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.time.LocalDate;
 
@@ -15,15 +14,13 @@ public class UsersBaseTest extends BaseTest {
 
     @BeforeAll
     protected void setUp() {
-        Long id = IdGenerator.getNextId(userStorage.ids());
         baseUser = User.builder()
-                .id(id)
                 .email("baseUser@email.ru")
                 .login("baseUser")
                 .name("Базовый пользователь")
                 .birthday(LocalDate.of(2015, 8, 13))
                 .build();
 
-        userStorage.create(id, baseUser);
+        userStorage.create(baseUser);
     }
 }

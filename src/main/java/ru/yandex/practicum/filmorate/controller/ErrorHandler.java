@@ -31,7 +31,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValid(ConstraintViolationException ex) {
+    public ErrorResponse handleConstraintViolation(ConstraintViolationException ex) {
         return ErrorResponse.builder()
                 .error(ex.getMessage())
                 .build();

@@ -2,11 +2,11 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -18,7 +18,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film create(Long key, Film value) {
+    public Film create(Film value) {
+        Long key = IdGenerator.getNextId(films.keySet());
+        value.setId(key);
         return films.put(key, value);
     }
 
@@ -34,18 +36,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film delete(Object key) {
+    public Film delete(Long key) {
         return films.remove(key);
     }
 
     @Override
     public Collection<Film> findAll() {
         return films.values();
-    }
-
-    @Override
-    public Set<Long> ids() {
-        return films.keySet();
     }
 
     @Override

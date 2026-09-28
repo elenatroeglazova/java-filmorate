@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.base;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
 import java.time.LocalDate;
 
@@ -16,9 +15,7 @@ public class FilmsBaseTest extends BaseTest {
 
     @BeforeAll
     public void setUp() {
-        Long id = IdGenerator.getNextId(filmStorage.ids());
         baseFilm = Film.builder()
-                .id(id)
                 .name("Кошмар на улице Вязов")
                 .releaseDate(LocalDate.of(1984, 11, 9))
                 .duration(ofMinutes(91))
@@ -26,6 +23,6 @@ public class FilmsBaseTest extends BaseTest {
                         "который убивает своих жертв в их снах.")
                 .build();
 
-        filmStorage.create(id, baseFilm);
+        filmStorage.create(baseFilm);
     }
 }
