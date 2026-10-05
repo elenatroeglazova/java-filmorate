@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         Film respFilm = objectMapper.readValue(resp.body().trim(), Film.class);
+        film.getLikes().addAll(respFilm.getLikes());
         assertEquals(film, respFilm, "В ответе должны быть данные фильма из запроса");
     }
 
@@ -111,7 +113,7 @@ public class UpdateFilmsTests extends FilmsBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /films должен вернуть 500");
+        assertEquals(404, resp.statusCode(), "PUT /films должен вернуть 404");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,

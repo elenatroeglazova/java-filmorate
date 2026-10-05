@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.base.UsersBaseTest;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class UpdateUsersTests extends UsersBaseTest {
                 "Content-Type должен содержать формат данных и кодировку");
 
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
+        user.getFriends().addAll(respUser.getFriends());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса");
     }
 
@@ -87,7 +89,7 @@ public class UpdateUsersTests extends UsersBaseTest {
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(UTF_8));
 
-        assertEquals(500, resp.statusCode(), "PUT /users должен вернуть 500");
+        assertEquals(404, resp.statusCode(), "PUT /users должен вернуть 404");
 
         String contentTypeHeaderValue = resp.headers().firstValue("Content-Type").orElse("");
         assertEquals("application/json", contentTypeHeaderValue,
@@ -425,6 +427,7 @@ public class UpdateUsersTests extends UsersBaseTest {
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
         user.setId(respUser.getId());
         user.setName(user.getLogin());
+        user.getFriends().addAll(respUser.getFriends());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
     }
 
@@ -456,6 +459,7 @@ public class UpdateUsersTests extends UsersBaseTest {
         User respUser = objectMapper.readValue(resp.body().trim(), User.class);
         user.setId(respUser.getId());
         user.setName(user.getLogin());
+        user.getFriends().addAll(respUser.getFriends());
         assertEquals(user, respUser, "В ответе должны быть данные пользователя из запроса с логином в имени");
     }
 

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.base.UsersBaseTest;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.io.IOException;
@@ -35,6 +36,6 @@ public class GetUsersTests extends UsersBaseTest {
 
         boolean shouldBeKinogolikInTheList = users.stream()
                 .anyMatch(f -> f.getLogin().equals(baseUser.getLogin()));
-        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться фильм " + baseUser);
+        assertTrue(shouldBeKinogolikInTheList, "В списке должен появиться пользователь " + baseUser);
     }
 }
