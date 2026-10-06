@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import ru.yandex.practicum.filmorate.enums.Genre;
+import ru.yandex.practicum.filmorate.enums.RatingMPA;
 import ru.yandex.practicum.filmorate.jackson.deserializers.DurationDeserializer;
 import ru.yandex.practicum.filmorate.validation_groups.*;
 
@@ -38,6 +40,10 @@ public class Film {
 
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
+
+    private Set<Genre> genres = new HashSet<>();
+
+    private RatingMPA ratingMPA;
 
     @EqualsAndHashCode.Exclude
     private final Set<Long> likes = new HashSet<>();
