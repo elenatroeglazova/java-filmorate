@@ -16,26 +16,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
-    public Film create(Film value) {
+    public Film create(Film film) {
         Long key = IdGenerator.getNextId(films.keySet());
-        value.setId(key);
-        return films.put(key, value);
+        film.setId(key);
+        return films.put(key, film);
     }
 
     @Override
-    public Film update(Long key, Film newValue) {
-        Film currentFilm = films.get(key);
+    public Film update(Long id, Film filmUpdate) {
+        Film currentFilm = films.get(id);
 
-        currentFilm.setDescription(newValue.getDescription());
-        currentFilm.setName(newValue.getName());
-        currentFilm.setReleaseDate(newValue.getReleaseDate());
-        currentFilm.setDuration(newValue.getDuration());
+        currentFilm.setDescription(filmUpdate.getDescription());
+        currentFilm.setName(filmUpdate.getName());
+        currentFilm.setReleaseDate(filmUpdate.getReleaseDate());
+        currentFilm.setDuration(filmUpdate.getDuration());
         return currentFilm;
     }
 
     @Override
-    public Film delete(Long key) {
-        return films.remove(key);
+    public Film delete(Long id) {
+        return films.remove(id);
     }
 
     @Override
@@ -44,9 +44,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> findById(Long key) {
+    public Optional<Film> findById(Long id) {
         return findAll().stream()
-                .filter(f -> f.getId().equals(key))
+                .filter(f -> f.getId().equals(id))
                 .findAny();
     }
 

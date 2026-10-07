@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.enums;
 
-import lombok.Data;
-
 public enum RatingMPA {
     G ("у фильма нет возрастных ограничений"),
     PG ("детям рекомендуется смотреть фильм с родителями"),

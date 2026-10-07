@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.enums;
 
-public enum Genre {
+public enum FilmGenre {
     HORROR,
     COMEDY,
     DRAMA,

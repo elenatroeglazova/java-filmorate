@@ -7,15 +7,15 @@ import java.util.Optional;
 
 public interface FilmStorage {
 
-    Film create(Film value);
+    Film create(Film film);
 
-    Film update(Long key, Film newValue);
+    Film update(Long id, Film filmUpdate);
 
-    Film delete(Long key);
+    Film delete(Long id);
 
     Collection<Film> findAll();
 
-    Optional<Film> findById(Long key);
+    Optional<Film> findById(Long id);
 
     void clear();
 }
