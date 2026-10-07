@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -29,9 +30,7 @@ public class FilmService {
 
     public Optional<Film> getById(Long id) {
         log.debug("Поиск фильма по id={}", id);
-        Optional<Film> film = films.findAll().stream()
-                .filter(f -> f.getId().equals(id))
-                .findAny();
+        Optional<Film> film = films.findById(id);
         film.ifPresentOrElse(
                 f -> log.debug("Фильм найден: {}", f),
                 () -> log.debug("Фильм с id={} не найден", id)
@@ -67,7 +66,7 @@ public class FilmService {
                 filmUpdate.getReleaseDate(), filmUpdate.getDuration());
 
         Long updatedId = filmUpdate.getId();
-        if (films.read(updatedId) != null) {
+        if (films.findById(updatedId).isPresent()) {
             log.debug("Найден фильм по id");
 
             Film newFilm = films.update(updatedId, filmUpdate);
@@ -82,13 +81,13 @@ public class FilmService {
     public void like(Long filmId, Long userId) {
         log.info("Получен запрос на добавление лайка фильму с id={} от пользователя с id={}", filmId, userId);
 
-        boolean isFilmExist = films.read(filmId) != null;
+        boolean isFilmExist = films.findById(filmId).isPresent();
         boolean isUserExist = userService.getById(userId).isPresent();
 
         log.trace("Фильм найден в сторадже: {}, пользователь найден в сторадже: {}", isFilmExist, isUserExist);
 
         if (isFilmExist && isUserExist) {
-            films.read(filmId).getLikes().add(userId);
+            films.findById(filmId).get().getLikes().add(userId);
             return;
         }
 
@@ -106,18 +105,19 @@ public class FilmService {
     public void dislike(Long filmId, Long userId) {
         log.info("Получен запрос на удаление лайка у фильма с id={} от пользователя с id={}", filmId, userId);
 
-        boolean isFilmExist = films.read(filmId) != null;
+        boolean isFilmExist = films.findById(filmId).isPresent();
         boolean isUserExist = userService.getById(userId).isPresent();
 
         log.trace("Фильм найден в сторадже: {}, пользователь найден в сторадже: {}", isFilmExist, isUserExist);
 
         if (isFilmExist && isUserExist) {
-            log.trace("Лайки от пользователей до удаления: " + films.read(filmId).getLikes());
-            log.trace("Пользователь есть в списке лайков: " + films.read(filmId).getLikes().contains(userId));
+            Film film = films.findById(filmId).get();
+            log.trace("Лайки от пользователей до удаления: " + film.getLikes());
+            log.trace("Пользователь есть в списке лайков: " + film.getLikes().contains(userId));
 
-            boolean isRemoved = films.read(filmId).getLikes().remove(userId);
+            boolean isRemoved = film.getLikes().remove(userId);
 
-            log.trace("Лайки от рользователей после удаления: " + films.read(filmId).getLikes());
+            log.trace("Лайки от рользователей после удаления: " + film.getLikes());
 
             if (isRemoved) {
                 log.info("Пользователь с id={} удалил лайк у фильма с id={}", userId, filmId);
