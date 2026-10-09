@@ -42,11 +42,13 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
         while (rs.next()) {
             Set<Genre> genres = new HashSet<>();
             Object[] genreArray = getArrayFromColumn(rs, "genres");
-            for (Object obj : genreArray) {
-                if (obj == null) continue;
-                Genre genre = parseGenre(obj.toString(), unknownGenres);
-                if (genre != null) {
-                    genres.add(genre);
+            if (!isEmpty(genreArray)) {
+                for (Object obj : genreArray) {
+                    if (obj == null) continue;
+                    Genre genre = parseGenre(obj.toString(), unknownGenres);
+                    if (genre != null) {
+                        genres.add(genre);
+                    }
                 }
             }
 
@@ -138,8 +140,7 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                     .build();
         }
 
-        RatingMPA ratingEnum = RATING_BY_NAME.get(ratingName);
-
+        RatingMPA ratingEnum = RatingMPA.BY_NORMAL_NAME.get(ratingName);
         if (isEmpty(ratingEnum)) {
             unknownRatings.add(ratingName);
             return Rating.builder()

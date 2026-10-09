@@ -39,7 +39,6 @@ public class Film {
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
 
-    @NotEmpty(groups = CommonChecks.class, message = "Список жанров фильма не должен быть пустым")
     private Set<Genre> genres = new HashSet<>();
 
     @NotNull(groups = CommonChecks.class, message = "Фильм должен иметь рейтинг MPAA")

@@ -38,7 +38,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(/*@Validated(CreateSequence.class) */@RequestBody Film film) {
+    public Film create(@Validated(CreateSequence.class) @RequestBody Film film) {
         return filmService.create(film);
     }
 

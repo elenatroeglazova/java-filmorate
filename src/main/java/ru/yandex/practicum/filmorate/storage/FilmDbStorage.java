@@ -1,19 +1,22 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.ObjectUtils;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.extractors.FilmResultSetExtractor;
 
 import javax.sql.DataSource;
 import java.util.*;
+
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Repository
 @Primary
@@ -26,8 +29,8 @@ public class FilmDbStorage implements FilmStorage {
                    r.id             AS rating_id,
                    r.name           AS rating_name
             FROM FILMS f
-            JOIN ratings r ON r.id = m.rating_id
-            JOIN (
+            JOIN ratings r ON r.id = f.rating_id
+            LEFT JOIN (
                 SELECT fg.film_id,
                        array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
                 FROM FILM_GENRE fg
@@ -49,8 +52,8 @@ public class FilmDbStorage implements FilmStorage {
                    r.id             AS rating_id,
                    r.name           AS rating_name
             FROM FILMS f
-            JOIN ratings r ON r.id = m.rating_id
-            JOIN (
+            JOIN ratings r ON r.id = f.rating_id
+            LEFT JOIN (
                 SELECT fg.film_id,
                        array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
                 FROM FILM_GENRE fg
@@ -67,6 +70,12 @@ public class FilmDbStorage implements FilmStorage {
             ) l ON l.film_id = f.id
             WHERE f.id = :id
             """;
+
+    private static final String MERGE_RATING_SQL = """
+        MERGE INTO ratings (id, "NAME") KEY(id)
+        VALUES (:id, :name)
+        """;
+
     private static final String MERGE_GENRE_SQL = """
         MERGE INTO genres (id, name) KEY(id)
         VALUES (:id, :name)
@@ -99,9 +108,10 @@ public class FilmDbStorage implements FilmStorage {
         long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
 
         if (id == 0) {
-            throw new IllegalStateException("id фильма не может быть 0");
+            throw new RuntimeException("id фильма не может быть 0");
         }
 
+        addFilmGenres(id, genres);
         film.setId(id);
 
         return film;
@@ -135,5 +145,37 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void clear() {
 
+    }
+
+    public void addRating(Rating rating) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", rating.getId())
+                .addValue("name", rating.getName() != null ? rating.getName().name() : null);
+
+        namedParameterJdbcTemplate.update(MERGE_RATING_SQL, params);
+    }
+
+    private void addGenres(Set<Genre> genres) {
+        SqlParameterSource[] genreParams = genres.stream()
+                .map(g -> new MapSqlParameterSource()
+                        .addValue("id", g.getId())
+                        .addValue("name", g.getName() != null ? g.getName().name() : null))
+                .toArray(SqlParameterSource[]::new);
+
+        namedParameterJdbcTemplate.batchUpdate(MERGE_GENRE_SQL, genreParams);
+    }
+
+    private void addFilmGenres(Long filmId, Set<Genre> genres) {
+        if (isEmpty(genres)) {
+            return;
+        }
+
+        SqlParameterSource[] mappingParams = genres.stream()
+                .map(g -> new MapSqlParameterSource()
+                        .addValue("filmId", filmId)
+                        .addValue("genreId", g.getId()))
+                .toArray(SqlParameterSource[]::new);
+
+        namedParameterJdbcTemplate.batchUpdate(MERGE_FILM_GENRE_SQL, mappingParams);
     }
 }
