@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -66,16 +65,17 @@ public class FilmService {
                 filmUpdate.getReleaseDate(), filmUpdate.getDuration());
 
         Long updatedId = filmUpdate.getId();
-        if (films.findById(updatedId).isPresent()) {
-            log.debug("Найден фильм по id");
+        films.findById(updatedId).ifPresentOrElse(
+                f -> log.debug("Найден фильм {} по id {}", f, updatedId),
+                () -> {
+                    log.error("Попытка обновить несуществующий фильм с id={}", updatedId);
+                    throw new NotFoundException("Фильм с id = " + updatedId + " не найден");
+                }
+        );
 
-            Film newFilm = films.update(updatedId, filmUpdate);
-            log.info("Фильм с id={} обновлен, новое название='{}'", filmUpdate.getId(), filmUpdate.getName());
-            return newFilm;
-        }
-
-        log.error("Попытка обновить несуществующий фильм с id={}", filmUpdate.getId());
-        throw new NotFoundException("Фильм с id = " + filmUpdate.getId() + " не найден");
+        Film newFilm = films.update(filmUpdate);
+        log.info("Фильм с id={} обновлен, новое название='{}'", filmUpdate.getId(), filmUpdate.getName());
+        return newFilm;
     }
 
     public void like(Long filmId, Long userId) {

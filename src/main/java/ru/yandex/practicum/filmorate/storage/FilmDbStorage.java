@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.ObjectUtils;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -71,20 +71,30 @@ public class FilmDbStorage implements FilmStorage {
             WHERE f.id = :id
             """;
 
+    private static final String UPDATE_FILM_SQL = """
+            UPDATE films
+            SET title        = :name,
+                description  = :description,
+                release_date = :releaseDate,
+                duration     = :duration,
+                rating_id    = :mpa.id
+            WHERE id = :id
+            """;
+
     private static final String MERGE_RATING_SQL = """
-        MERGE INTO ratings (id, "NAME") KEY(id)
-        VALUES (:id, :name)
-        """;
+            MERGE INTO ratings (name) KEY(name)
+            VALUES (:name)
+            """;
 
     private static final String MERGE_GENRE_SQL = """
-        MERGE INTO genres (id, name) KEY(id)
-        VALUES (:id, :name)
-        """;
+            MERGE INTO genres (name) KEY(name)
+            VALUES (:name)
+            """;
 
     private static final String MERGE_FILM_GENRE_SQL = """
-        MERGE INTO film_genre (film_id, genre_id) KEY(film_id, genre_id)
-        VALUES (:filmId, :genreId)
-        """;
+            MERGE INTO film_genre (film_id, genre_id) KEY(film_id, genre_id)
+            VALUES (:filmId, :genreId)
+            """;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmResultSetExtractor extractor;
@@ -118,8 +128,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Long id, Film filmUpdate) {
-        return null;
+    public Film update(Film filmUpdate) {
+        SqlParameterSource params = new BeanPropertySqlParameterSource(filmUpdate);
+        int updated = namedParameterJdbcTemplate.update(UPDATE_FILM_SQL, params);
+
+        if (updated == 0) {
+            throw new RuntimeException("Не удалось обновить фильм с id=" + filmUpdate.getId());
+        }
+
+        updateGenres(filmUpdate);
+        return filmUpdate;
     }
 
     @Override
@@ -149,7 +167,6 @@ public class FilmDbStorage implements FilmStorage {
 
     public void addRating(Rating rating) {
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("id", rating.getId())
                 .addValue("name", rating.getName() != null ? rating.getName().name() : null);
 
         namedParameterJdbcTemplate.update(MERGE_RATING_SQL, params);
@@ -158,11 +175,24 @@ public class FilmDbStorage implements FilmStorage {
     private void addGenres(Set<Genre> genres) {
         SqlParameterSource[] genreParams = genres.stream()
                 .map(g -> new MapSqlParameterSource()
-                        .addValue("id", g.getId())
                         .addValue("name", g.getName() != null ? g.getName().name() : null))
                 .toArray(SqlParameterSource[]::new);
 
         namedParameterJdbcTemplate.batchUpdate(MERGE_GENRE_SQL, genreParams);
+    }
+
+    private void updateGenres(Film film) {
+        Long filmId = film.getId();
+        Set<Genre> genres = film.getGenres();
+
+        namedParameterJdbcTemplate.update(
+                "DELETE FROM film_genre WHERE film_id = :filmId",
+                new MapSqlParameterSource("filmId", filmId));
+
+        if (!isEmpty(genres)) {
+            addGenres(genres);
+            addFilmGenres(filmId, genres);
+        }
     }
 
     private void addFilmGenres(Long filmId, Set<Genre> genres) {

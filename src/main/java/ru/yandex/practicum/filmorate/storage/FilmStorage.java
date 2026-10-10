@@ -9,7 +9,7 @@ public interface FilmStorage {
 
     Film create(Film film);
 
-    Film update(Long id, Film filmUpdate);
+    Film update(Film filmUpdate);
 
     Film delete(Long id);
 
