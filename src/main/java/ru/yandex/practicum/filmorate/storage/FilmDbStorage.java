@@ -28,19 +28,19 @@ public class FilmDbStorage implements FilmStorage {
                    l.liked_user_ids AS liked_user_ids,
                    r.id             AS rating_id,
                    r.name           AS rating_name
-            FROM FILMS f
+            FROM films f
             JOIN ratings r ON r.id = f.rating_id
             LEFT JOIN (
                 SELECT fg.film_id,
                        array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
-                FROM FILM_GENRE fg
-                JOIN GENRES gen ON gen.id = fg.genre_id
+                FROM film_genre fg
+                JOIN genres gen ON gen.id = fg.genre_id
                 GROUP BY fg.film_id
             ) g ON g.film_id = f.id
             LEFT JOIN (
                 SELECT ls.film_id,
                        array_agg(DISTINCT ls.user_id) AS liked_user_ids
-                FROM LIKES ls
+                FROM likes ls
                 GROUP BY ls.film_id
             ) l ON l.film_id = f.id
             """;
@@ -51,20 +51,20 @@ public class FilmDbStorage implements FilmStorage {
                    l.liked_user_ids AS liked_user_ids,
                    r.id             AS rating_id,
                    r.name           AS rating_name
-            FROM FILMS f
+            FROM films f
             JOIN ratings r ON r.id = f.rating_id
             LEFT JOIN (
                 SELECT fg.film_id,
                        array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
-                FROM FILM_GENRE fg
-                JOIN GENRES gen ON gen.id = fg.genre_id
+                FROM film_genre fg
+                JOIN genres gen ON gen.id = fg.genre_id
                 WHERE fg.film_id = :id
                 GROUP BY fg.film_id
             ) g ON g.film_id = f.id
             LEFT JOIN (
                 SELECT ls.film_id,
                        array_agg(DISTINCT ls.user_id) AS liked_user_ids
-                FROM LIKES ls
+                FROM likes ls
                 WHERE ls.film_id = :id
                 GROUP BY ls.film_id
             ) l ON l.film_id = f.id
@@ -79,6 +79,20 @@ public class FilmDbStorage implements FilmStorage {
                 duration     = :duration,
                 rating_id    = :mpa.id
             WHERE id = :id
+            """;
+
+    private static final String DELETE_FILM_SQL = """
+            DELETE FROM films WHERE id = :id
+            """;
+
+    private static final String INSERT_LIKE_SQL = """
+            INSERT INTO likes (film_id, user_id)
+            VALUES (:filmId, :userId)
+            """;
+
+    private static final String DELETE_LIKE_SQL = """
+            DELETE FROM likes
+            WHERE film_id = :filmId AND user_id = :userId
             """;
 
     private static final String MERGE_RATING_SQL = """
@@ -141,8 +155,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film delete(Long id) {
-        return null;
+    public boolean delete(Long id) {
+        int deleted = namedParameterJdbcTemplate.update(
+                DELETE_FILM_SQL, new MapSqlParameterSource("id", id));
+
+        return deleted > 0;
     }
 
     @Override
@@ -158,6 +175,25 @@ public class FilmDbStorage implements FilmStorage {
         return Optional.ofNullable(films)
                 .filter(list -> !list.isEmpty())
                 .map(List::getFirst);
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("filmId", filmId)
+                .addValue("userId", userId);
+
+        namedParameterJdbcTemplate.update(INSERT_LIKE_SQL, params);
+    }
+
+    @Override
+    public boolean removeLike(Long filmId, Long userId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("filmId", filmId)
+                .addValue("userId", userId);
+
+        int deleted = namedParameterJdbcTemplate.update(DELETE_LIKE_SQL, params);
+        return deleted > 0;
     }
 
     @Override

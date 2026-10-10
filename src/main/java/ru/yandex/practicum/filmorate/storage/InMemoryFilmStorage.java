@@ -34,8 +34,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film delete(Long id) {
-        return films.remove(id);
+    public boolean delete(Long id) {
+        return films.remove(id) != null;
     }
 
     @Override
@@ -48,6 +48,21 @@ public class InMemoryFilmStorage implements FilmStorage {
         return findAll().stream()
                 .filter(f -> f.getId().equals(id))
                 .findAny();
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        findAll().stream()
+                .filter(f -> f.getId().equals(filmId))
+                .forEach(f -> f.getLikes().add(userId));
+    }
+
+    @Override
+    public boolean removeLike(Long filmId, Long userId) {
+        return findAll().stream()
+                .filter(f -> f.getId().equals(filmId))
+                .peek(f -> f.getLikes().remove(userId))
+                .noneMatch(f -> f.getLikes().contains(userId));
     }
 
     @Override

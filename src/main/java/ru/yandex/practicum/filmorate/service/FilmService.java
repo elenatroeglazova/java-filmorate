@@ -81,60 +81,54 @@ public class FilmService {
     public void like(Long filmId, Long userId) {
         log.info("Получен запрос на добавление лайка фильму с id={} от пользователя с id={}", filmId, userId);
 
-        boolean isFilmExist = films.findById(filmId).isPresent();
-        boolean isUserExist = userService.getById(userId).isPresent();
+        userService.getById(userId).ifPresentOrElse(
+                u -> log.debug("Пользователь {} найден по id={}", u, userId),
+                () -> {
+                    log.error("Попытка поставить лайк от несуществующему пользователя с id={}", userId);
+                    throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+                }
+        );
 
-        log.trace("Фильм найден в сторадже: {}, пользователь найден в сторадже: {}", isFilmExist, isUserExist);
-
-        if (isFilmExist && isUserExist) {
-            films.findById(filmId).get().getLikes().add(userId);
-            return;
-        }
-
-        if (isFilmExist) {
-            log.error("Попытка поставить лайк от несуществующему пользователя с id={}", userId);
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        } else {
-            log.error("Попытка поставить лайк несуществующему фильму с id={}", filmId);
-            throw new NotFoundException("Фильм с id = " + filmId + " не найден");
-        }
-
-
+        films.findById(filmId).ifPresentOrElse(
+                f -> {
+                    log.debug("Фильм {} по id={}", f, filmId);
+                    films.addLike(filmId, userId);
+                    log.info("Поставлен лайк фильму id={} от пользователя id={}", filmId, userId);
+                },
+                () -> {
+                    log.error("Попытка поставить лайк несуществующему фильму с id={}", filmId);
+                    throw new NotFoundException("Фильм с id = " + filmId + " не найден");
+                }
+        );
     }
 
-    public void dislike(Long filmId, Long userId) {
+    public void removeLike(Long filmId, Long userId) {
         log.info("Получен запрос на удаление лайка у фильма с id={} от пользователя с id={}", filmId, userId);
 
-        boolean isFilmExist = films.findById(filmId).isPresent();
-        boolean isUserExist = userService.getById(userId).isPresent();
+        userService.getById(userId).ifPresentOrElse(
+                u -> log.debug("Пользователь {} найден по id={}", u, userId),
+                () -> {
+                    log.error("Попытка удалить лайк от несуществующего пользователя с id={}", userId);
+                    throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+                }
+        );
 
-        log.trace("Фильм найден в сторадже: {}, пользователь найден в сторадже: {}", isFilmExist, isUserExist);
+        films.findById(filmId).ifPresentOrElse(
+                f -> {
+                    log.debug("Фильм {} найден по id={}", f, filmId);
+                    boolean isRemoved = films.removeLike(filmId, userId);
 
-        if (isFilmExist && isUserExist) {
-            Film film = films.findById(filmId).get();
-            log.trace("Лайки от пользователей до удаления: " + film.getLikes());
-            log.trace("Пользователь есть в списке лайков: " + film.getLikes().contains(userId));
-
-            boolean isRemoved = film.getLikes().remove(userId);
-
-            log.trace("Лайки от рользователей после удаления: " + film.getLikes());
-
-            if (isRemoved) {
-                log.info("Пользователь с id={} удалил лайк у фильма с id={}", userId, filmId);
-            } else {
-                log.warn("Лайк от пользователя с id={} у фильма с id={} не найден", userId, filmId);
-            }
-
-            return;
-        }
-
-        if (isFilmExist) {
-            log.error("Попытка удалить лайк от несуществующего пользователя с id={}", userId);
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        } else {
-            log.error("Попытка удалить лайк у несуществующего фильма с id={}", filmId);
-            throw new NotFoundException("Фильм с id = " + filmId + " не найден");
-        }
+                    if (isRemoved) {
+                        log.info("Удален лайк от пользователя id={} у фильма id={}", userId, filmId);
+                    } else {
+                        log.warn("Лайк от пользователя id={} у фильма id={} не найден", userId, filmId);
+                    }
+                },
+                () -> {
+                    log.error("Попытка удалить лайк у несуществующего фильма с id={}", filmId);
+                    throw new NotFoundException("Фильм с id = " + filmId + " не найден");
+                }
+        );
     }
 
     public Collection<Film> getMostPopular(int count) {
