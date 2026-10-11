@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS ratings (
     name VARCHAR(40) UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS friends_statuses (
+CREATE TABLE IF NOT EXISTS friend_status (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     status VARCHAR(40)
 );
@@ -46,5 +46,5 @@ CREATE TABLE IF NOT EXISTS friends (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id),
     friend_id BIGINT NOT NULL REFERENCES users(id),
-    status_id BIGINT NOT NULL REFERENCES friends_statuses(id)
+    status_id BIGINT NOT NULL REFERENCES friend_status(id)
 );

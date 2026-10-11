@@ -18,8 +18,9 @@ import java.util.*;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
-@Repository
+
 @Primary
+@Repository
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private static final String FIND_ALL_SQL = """
