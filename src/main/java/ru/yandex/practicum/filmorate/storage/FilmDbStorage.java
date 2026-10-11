@@ -133,7 +133,7 @@ public class FilmDbStorage implements FilmStorage {
         long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();
 
         if (id == 0) {
-            throw new RuntimeException("id фильма не может быть 0");
+            throw new RuntimeException("Фильм не был создан по неизвестной причине");
         }
 
         addFilmGenres(id, genres);
