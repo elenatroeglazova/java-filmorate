@@ -142,7 +142,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film filmUpdate) {
+    public void update(Film filmUpdate) {
         SqlParameterSource params = new BeanPropertySqlParameterSource(filmUpdate);
         int updated = namedParameterJdbcTemplate.update(UPDATE_FILM_SQL, params);
 
@@ -151,7 +151,6 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         updateGenres(filmUpdate);
-        return filmUpdate;
     }
 
     @Override

@@ -23,14 +23,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film filmUpdate) {
+    public void update(Film filmUpdate) {
         Film currentFilm = films.get(filmUpdate.getId());
 
         currentFilm.setDescription(filmUpdate.getDescription());
         currentFilm.setName(filmUpdate.getName());
         currentFilm.setReleaseDate(filmUpdate.getReleaseDate());
         currentFilm.setDuration(filmUpdate.getDuration());
-        return currentFilm;
     }
 
     @Override
@@ -52,15 +51,12 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(Long filmId, Long userId) {
-        findAll().stream()
-                .filter(f -> f.getId().equals(filmId))
-                .forEach(f -> f.getLikes().add(userId));
+        findById(filmId).ifPresent(f -> f.getLikes().add(userId));
     }
 
     @Override
     public boolean removeLike(Long filmId, Long userId) {
-        return findAll().stream()
-                .filter(f -> f.getId().equals(filmId))
+        return findById(filmId).stream()
                 .peek(f -> f.getLikes().remove(userId))
                 .noneMatch(f -> f.getLikes().contains(userId));
     }

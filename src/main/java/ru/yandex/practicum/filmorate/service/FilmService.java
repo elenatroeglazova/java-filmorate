@@ -22,9 +22,11 @@ public class FilmService {
     private final UserService userService;
 
     public Collection<Film> films() {
-        log.info("Получен запрос на получение всех фильмов. Всего фильмов: {}", films.findAll().size());
-        log.debug("Список фильмов: {}", films.findAll());
-        return films.findAll();
+        log.info("Получен запрос на получение всех фильмов.");
+
+        Collection<Film> all = films.findAll();
+        log.debug("Всего фильмов: {}. Список фильмов: {}", all.size(), all);
+        return all;
     }
 
     public Optional<Film> getById(Long id) {
@@ -73,9 +75,9 @@ public class FilmService {
                 }
         );
 
-        Film newFilm = films.update(filmUpdate);
-        log.info("Фильм с id={} обновлен, новое название='{}'", filmUpdate.getId(), filmUpdate.getName());
-        return newFilm;
+        films.update(filmUpdate);
+        log.info("Фильм с id={} обновлен, новое название='{}'", updatedId, filmUpdate.getName());
+        return filmUpdate;
     }
 
     public void like(Long filmId, Long userId) {
