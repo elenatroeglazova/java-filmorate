@@ -93,9 +93,6 @@ public class UserService {
         if (isRemoved) {
             log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
         }
-
-        throw new RuntimeException("Не удалось удалить друга id=" + friendId + " у пользователя id=" + userId +
-                "по неизвестной причине");
     }
 
     public Collection<User> friends(Long id) {

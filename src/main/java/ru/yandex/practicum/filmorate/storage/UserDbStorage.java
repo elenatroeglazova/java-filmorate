@@ -24,7 +24,7 @@ public class UserDbStorage implements UserStorage {
             FROM users u
             LEFT JOIN (
                 SELECT fr.user_id,
-                       array_agg(DISTINCT fr.friend_id || ':' || COALESCE(fs.status, '')) AS friends
+                       array_agg(DISTINCT fr.friend_id || ':' || fs.status) AS friends
                 FROM friends fr
                 JOIN friend_status fs ON fs.id = fr.status_id
                 GROUP BY fr.user_id
@@ -37,7 +37,7 @@ public class UserDbStorage implements UserStorage {
             FROM users u
             LEFT JOIN (
                 SELECT fr.user_id,
-                       array_agg(DISTINCT fr.friend_id || ':' || COALESCE(fs.status, '')) AS friends
+                       array_agg(DISTINCT fr.friend_id || ':' || fs.status) AS friends
                 FROM friends fr
                 JOIN friend_status fs ON fs.id = fr.status_id
                 WHERE fr.user_id = :id
@@ -53,6 +53,40 @@ public class UserDbStorage implements UserStorage {
                 name     = :name,
                 birthday = :birthday
             WHERE id = :id
+            """;
+
+    private static final String DELETE_USER_SQL = """
+            DELETE FROM users WHERE id = :id
+            """;
+
+    private static final String FIND_FRIENDS_SQL = """
+            SELECT u.*,
+                   f.friends AS friends
+            FROM users u
+            JOIN friends fr ON fr.friend_id = u.id
+            LEFT JOIN (
+                SELECT fr2.user_id,
+                       array_agg(DISTINCT fr2.friend_id || ':' || fs.status) AS friends
+                FROM friends fr2
+                JOIN friend_status fs ON fs.id = fr2.status_id
+                GROUP BY fr2.user_id
+            ) f ON f.user_id = u.id
+            WHERE fr.user_id = :userId
+            """;
+
+    private static final String INSERT_FRIEND_SQL = """
+            INSERT INTO friends (user_id, friend_id, status_id)
+            VALUES (:userId, :friendId, (SELECT id FROM friend_status WHERE status = 'PENDING'))
+            """;
+
+    private static final String DELETE_FRIEND_SQL = """
+            DELETE FROM friends
+            WHERE (user_id = :userId AND friend_id = :friendId)
+               OR (user_id = :friendId AND friend_id = :userId
+                   AND EXISTS (
+                       SELECT 1 FROM friends f2
+                       WHERE f2.user_id = :userId
+                   ))
             """;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -93,7 +127,10 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean delete(Long id) {
-        return false;
+        int deleted = namedParameterJdbcTemplate.update(
+                DELETE_USER_SQL, new MapSqlParameterSource("id", id));
+
+        return deleted > 0;
     }
 
     @Override
@@ -115,17 +152,29 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> friends(Long id) {
-        return List.of();
+        return namedParameterJdbcTemplate.query(
+                FIND_FRIENDS_SQL,
+                new MapSqlParameterSource("userId", id),
+                extractor);
     }
 
     @Override
     public void addFriend(Long userId, Long friendId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("friendId", friendId);
 
+        namedParameterJdbcTemplate.update(INSERT_FRIEND_SQL, params);
     }
 
     @Override
     public boolean removeFriend(Long userId, Long friendId) {
-        return false;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("friendId", friendId);
+
+        int deleted = namedParameterJdbcTemplate.update(DELETE_FRIEND_SQL, params);
+        return deleted > 0;
     }
 
     @Override
