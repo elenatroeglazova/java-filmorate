@@ -2,23 +2,26 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.enums.FilmGenre;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.utils.IdGenerator;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Qualifier("inMemoryStorage")
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Genre> genres = new HashMap<>();
 
     @Override
     public Film create(Film film) {
         Long key = IdGenerator.getNextId(films.keySet());
         film.setId(key);
+        film.getGenres().forEach(g -> genres.put(g.getId(), g));
         return films.put(key, film);
     }
 
@@ -30,6 +33,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         currentFilm.setName(filmUpdate.getName());
         currentFilm.setReleaseDate(filmUpdate.getReleaseDate());
         currentFilm.setDuration(filmUpdate.getDuration());
+        currentFilm.setGenres(filmUpdate.getGenres());
+
+        filmUpdate.getGenres().forEach(g -> genres.put(g.getId(), g));
     }
 
     @Override
@@ -59,6 +65,16 @@ public class InMemoryFilmStorage implements FilmStorage {
         return findById(filmId).stream()
                 .peek(f -> f.getLikes().remove(userId))
                 .noneMatch(f -> f.getLikes().contains(userId));
+    }
+
+    @Override
+    public Collection<Genre> genres() {
+        return genres.values();
+    }
+
+    @Override
+    public Genre findGenreById(Long genreId) {
+        return genres.get(genreId);
     }
 
     @Override

@@ -21,22 +21,9 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
     private static final String GENRE_SEPARATOR = ":";
 
-    private static final Map<String, FilmGenre> GENRE_BY_NAME = new HashMap<>();
-    private static final Map<String, RatingMPA> RATING_BY_NAME = new HashMap<>();
-
-    static {
-        for (FilmGenre g : FilmGenre.values()) {
-            GENRE_BY_NAME.put(g.name(), g);
-        }
-        for (RatingMPA r : RatingMPA.values()) {
-            RATING_BY_NAME.put(r.name(), r);
-        }
-    }
-
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {
         List<Film> films = new ArrayList<>();
-        Set<String> unknownGenres = new HashSet<>();
         Set<String> unknownRatings = new HashSet<>();
 
         while (rs.next()) {
@@ -45,7 +32,7 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
             if (!isEmpty(genreArray)) {
                 for (Object obj : genreArray) {
                     if (obj == null) continue;
-                    Genre genre = parseGenre(obj.toString(), unknownGenres);
+                    Genre genre = parseGenre(obj.toString());
                     if (genre != null) {
                         genres.add(genre);
                     }
@@ -77,10 +64,6 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
             films.add(film);
         }
 
-        if (!unknownGenres.isEmpty()) {
-            log.warn("Обнаружены жанры, отсутствующие в enum FilmGenre: {}", unknownGenres);
-        }
-
         if (!unknownRatings.isEmpty()) {
             log.warn("Обнаружены рейтинги, отсутствующие в enum RatingMPA: {}", unknownRatings);
         }
@@ -88,7 +71,7 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
         return films;
     }
 
-    private Genre parseGenre(String raw, Set<String> unknownGenres) {
+    private Genre parseGenre(String raw) {
         int sepIndex = raw.indexOf(GENRE_SEPARATOR);
         if (sepIndex <= 0) {
             log.warn("Повреждённая запись жанра: '{}'", raw);
@@ -113,19 +96,9 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                     .build();
         }
 
-        FilmGenre genreEnum = GENRE_BY_NAME.get(namePart);
-
-        if (isEmpty(genreEnum)) {
-            unknownGenres.add(namePart);
-            return Genre.builder()
-                    .id(genreId)
-                    .name(null)
-                    .build();
-        }
-
         return Genre.builder()
                 .id(genreId)
-                .name(genreEnum)
+                .name(namePart)
                 .build();
     }
 

@@ -15,5 +15,5 @@ import ru.yandex.practicum.filmorate.validation_groups.NotEmptyObject;
 @NotEmptyObject(groups = NotEmptyBody.class)
 public class Genre {
     private Long id;
-    private FilmGenre name;
+    private String name;
 }

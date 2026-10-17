@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
@@ -22,7 +23,8 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping("/{filmId}")
-    public Optional<Film> film(@PathVariable Long filmId) {
+    public Optional<Film> film(@PathVariable
+                               @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
         return filmService.getById(filmId);
     }
 
@@ -33,7 +35,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> mostPopular(@RequestParam(defaultValue = "10")
-                                            @Positive(message = "Количество фильмов должно быть больше 0") int count) {
+                                        @Positive(message = "Количество фильмов должно быть больше 0") int count) {
         return filmService.getMostPopular(count);
     }
 
@@ -48,14 +50,18 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void like(@PathVariable Long id,
-                     @PathVariable Long userId) {
+    public void like(@PathVariable
+                     @Positive(message = "id фильма должен быть положительным числом") Long id,
+                     @PathVariable
+                     @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
         filmService.like(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void dislike(@PathVariable Long id,
-                        @PathVariable Long userId) {
+    public void removeLike(@PathVariable
+                           @Positive(message = "id фильма должен быть положительным числом") Long id,
+                           @PathVariable
+                           @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
         filmService.removeLike(id, userId);
     }
 }

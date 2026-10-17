@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.jackson.deserializers.DurationDeserializer;
+import ru.yandex.practicum.filmorate.jackson.serializers.DurationSerializer;
 import ru.yandex.practicum.filmorate.validation_groups.*;
 
 import java.time.Duration;
@@ -47,7 +49,7 @@ public class Film {
     @EqualsAndHashCode.Exclude
     private Set<Long> likes = new HashSet<>();
 
-    @Positive(groups = CommonChecks.class, message = "Продолжиьельность фильма не может быть отрицательным числом")
+    @Positive(groups = CommonChecks.class, message = "Продолжительность фильма не может быть отрицательным числом")
     @JsonGetter("duration")
     public Long getDurationInMinutes() {
         if (duration == null) {

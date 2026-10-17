@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
@@ -146,5 +147,26 @@ public class FilmService {
         log.trace("Список популярных фильмов: {}", popular);
 
         return popular;
+    }
+
+    public Collection<Genre> genres() {
+        log.info("Получен запрос на получение списка всех жанров.");
+
+        Collection<Genre> all = films.genres();
+        log.debug("Всего жанров: {}. Список жанров: {}", all.size(), all);
+        return all;
+    }
+
+    public Genre findGenreById(Long genreId) {
+        log.debug("Поиск жанра по id={}", genreId);
+        Genre genre = films.findGenreById(genreId);
+
+        log.debug("Жанр {} найден по id={}", genre, genreId);
+        /*genre.ifPresentOrElse(
+                g -> ,
+                () -> log.debug("Жанр по id={} не найден", genreId)
+        );*/
+
+        return genre;
     }
 }
