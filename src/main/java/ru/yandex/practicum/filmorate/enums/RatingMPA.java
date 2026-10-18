@@ -27,7 +27,7 @@ public enum RatingMPA {
         return normalName;
     }
 
-    public static final Map<String, RatingMPA> BY_NORMAL_NAME =
+    private static final Map<String, RatingMPA> BY_NORMAL_NAME =
             Arrays.stream(values())
                     .collect(Collectors.toMap(RatingMPA::getNormalName, Function.identity()));
 

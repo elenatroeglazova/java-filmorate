@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
@@ -157,16 +158,27 @@ public class FilmService {
         return all;
     }
 
+    public Collection<Rating> ratings() {
+        log.info("Получен запрос на получение списка всех рейтингов.");
+
+        Collection<Rating> all = films.ratings();
+        log.debug("Всего записей с рейтингами: {}. Список рейтингов: {}", all.size(), all);
+        return all;
+    }
+
     public Genre findGenreById(Long genreId) {
         log.debug("Поиск жанра по id={}", genreId);
         Genre genre = films.findGenreById(genreId);
-
         log.debug("Жанр {} найден по id={}", genre, genreId);
-        /*genre.ifPresentOrElse(
-                g -> ,
-                () -> log.debug("Жанр по id={} не найден", genreId)
-        );*/
 
         return genre;
+    }
+
+    public Rating findRatingById(Long ratingId) {
+        log.debug("Поиск рейтинга по id={}", ratingId);
+        Rating rating = films.findRatingById(ratingId);
+        log.debug("Рейтинг {} найден по id={}", rating, ratingId);
+
+        return rating;
     }
 }

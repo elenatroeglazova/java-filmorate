@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.extractors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.enums.FilmGenre;
 import ru.yandex.practicum.filmorate.enums.RatingMPA;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -12,7 +11,10 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -24,7 +26,6 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {
         List<Film> films = new ArrayList<>();
-        Set<String> unknownRatings = new HashSet<>();
 
         while (rs.next()) {
             Set<Genre> genres = new HashSet<>();
@@ -55,17 +56,13 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                     .description(rs.getString("description"))
                     .releaseDate(rs.getDate("release_date").toLocalDate())
                     .duration(Duration.ofMinutes(rs.getLong("duration")))
-                    .mpa(parseRating(rs, unknownRatings))
+                    .mpa(parseRating(rs))
                     .genres(genres)
                     .likes(likedUserIds)
                     .build();
 
 
             films.add(film);
-        }
-
-        if (!unknownRatings.isEmpty()) {
-            log.warn("Обнаружены рейтинги, отсутствующие в enum RatingMPA: {}", unknownRatings);
         }
 
         return films;
@@ -102,7 +99,7 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                 .build();
     }
 
-    private Rating parseRating(ResultSet rs, Set<String> unknownRatings) throws SQLException {
+    private Rating parseRating(ResultSet rs) throws SQLException {
         Long ratingId = rs.getLong("rating_id");
         String ratingName = rs.getString("rating_name");
 
@@ -113,9 +110,8 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                     .build();
         }
 
-        RatingMPA ratingEnum = RatingMPA.BY_NORMAL_NAME.get(ratingName);
+        RatingMPA ratingEnum = RatingMPA.fromNormalName(ratingName);
         if (isEmpty(ratingEnum)) {
-            unknownRatings.add(ratingName);
             return Rating.builder()
                     .id(ratingId)
                     .name(null)

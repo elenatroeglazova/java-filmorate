@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.extractors.FilmResultSetExtractor;
 import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
+import ru.yandex.practicum.filmorate.storage.mappers.RatingRowMapper;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -107,14 +108,15 @@ public class FilmDbStorage implements FilmStorage {
             WHERE id = :genreId
             """;
 
-    private static final String MERGE_RATING_SQL = """
-            MERGE INTO ratings (name) KEY(name)
-            VALUES (:name)
+    private static final String FIND_ALL_RATINGS_SQL = """
+            SELECT * FROM ratings
+            ORDER BY id
+            LIMIT 5
             """;
 
-    private static final String MERGE_GENRE_SQL = """
-            MERGE INTO genres (name) KEY(name)
-            VALUES (:name)
+    private static final String FIND_BY_ID_RATING_SQL = """
+            SELECT * FROM ratings
+            WHERE id = :ratingId
             """;
 
     private static final String MERGE_FILM_GENRE_SQL = """
@@ -126,6 +128,7 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmResultSetExtractor extractor;
     private final DataSource dataSource;
     private final GenreRowMapper genreRowMapper;
+    private final RatingRowMapper ratingRowMapper;
 
     @Override
     public Film create(Film film) {
@@ -214,6 +217,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Rating> ratings() {
+        return namedParameterJdbcTemplate.query(FIND_ALL_RATINGS_SQL, ratingRowMapper);
+    }
+
+    @Override
     public Genre findGenreById(Long genreId) {
         MapSqlParameterSource params = new MapSqlParameterSource("genreId", genreId);
         List<Genre> genres = namedParameterJdbcTemplate.query(FIND_BY_ID_GENRE_SQL, params, genreRowMapper);
@@ -223,24 +231,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Rating findRatingById(Long ratingId) {
+        MapSqlParameterSource params = new MapSqlParameterSource("ratingId", ratingId);
+        List<Rating> ratings = namedParameterJdbcTemplate.query(FIND_BY_ID_RATING_SQL, params, ratingRowMapper);
+
+        return ratings.stream().findAny().orElseThrow(() ->
+                new NotFoundException("Рейтинг по id=" + ratingId + " не найден"));
+    }
+
+    @Override
     public void clear() {
 
-    }
-
-    public void addRating(Rating rating) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("name", rating.getName() != null ? rating.getName().name() : null);
-
-        namedParameterJdbcTemplate.update(MERGE_RATING_SQL, params);
-    }
-
-    private void addGenres(Set<Genre> genres) {
-        SqlParameterSource[] genreParams = genres.stream()
-                .map(g -> new MapSqlParameterSource()
-                        .addValue("name", g.getName()))
-                .toArray(SqlParameterSource[]::new);
-
-        namedParameterJdbcTemplate.batchUpdate(MERGE_GENRE_SQL, genreParams);
     }
 
     private void updateGenres(Film film) {
@@ -252,7 +253,6 @@ public class FilmDbStorage implements FilmStorage {
                 new MapSqlParameterSource("filmId", filmId));
 
         if (!isEmpty(genres)) {
-            addGenres(genres);
             addFilmGenres(filmId, genres);
         }
     }

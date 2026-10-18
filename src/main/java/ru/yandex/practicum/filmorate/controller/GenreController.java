@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -29,7 +28,7 @@ public class GenreController {
 
     @GetMapping("/{id}")
     public Genre genre(@PathVariable
-                                 @Positive(message = "id жанра должен быть положительным числом") Long id) {
+                       @Positive(message = "id жанра должен быть положительным числом") Long id) {
         return filmService.findGenreById(id);
     }
 }
