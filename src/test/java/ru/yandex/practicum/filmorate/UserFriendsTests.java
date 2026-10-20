@@ -43,8 +43,8 @@ public class UserFriendsTests extends FriendsBaseTest {
                 .orElse(null);
 
         assertNotNull(newFriend, "В списке друзей пользователя с id=3 должен появиться пользователь с id=4");
-        assertTrue(newFriend.getFriends().contains(3L),
-                "В списке друзей пользователя с id=4 должен быть друг с id=3");
+        assertFalse(newFriend.getFriends().containsKey(3L),
+                "В списке друзей пользователя с id=4 не должен быть друг с id=3");
     }
 
     @Test

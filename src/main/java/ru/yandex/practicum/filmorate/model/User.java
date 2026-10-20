@@ -36,5 +36,5 @@ public class User {
     private LocalDate birthday;
 
     @EqualsAndHashCode.Exclude
-    private final Map<Long, FriendStatus> friends = new HashMap<>();
+    private Map<Long, FriendStatus> friends = new HashMap<>();
 }
