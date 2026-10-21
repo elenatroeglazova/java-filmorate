@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.filmorate.enums.FilmGenre;
 import ru.yandex.practicum.filmorate.validation_groups.NotEmptyBody;
 import ru.yandex.practicum.filmorate.validation_groups.NotEmptyObject;
 

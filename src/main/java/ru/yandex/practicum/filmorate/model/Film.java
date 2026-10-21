@@ -3,12 +3,10 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.jackson.deserializers.DurationDeserializer;
-import ru.yandex.practicum.filmorate.jackson.serializers.DurationSerializer;
 import ru.yandex.practicum.filmorate.validation_groups.*;
 
 import java.time.Duration;
