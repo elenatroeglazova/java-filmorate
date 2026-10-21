@@ -142,7 +142,7 @@ public class FilmDbStorage implements FilmStorage {
         parameters.put("TITLE", film.getName());
         parameters.put("DESCRIPTION", film.getDescription());
         parameters.put("RELEASE_DATE", film.getReleaseDate());
-        parameters.put("DURATION", film.getDuration());
+        parameters.put("DURATION", film.getDurationInMinutes());
         parameters.put("RATING_ID", film.getMpa().getId());
 
         long id = simpleJdbcInsert.executeAndReturnKey(parameters).longValue();

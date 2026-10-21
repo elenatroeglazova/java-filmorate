@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
-import ru.yandex.practicum.filmorate.enums.RatingMPA;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Rating;
 
@@ -11,6 +10,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashSet;
 import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,6 +39,7 @@ public class GetFilmsTests extends FilmsBaseTest {
         Film expected = baseFilm;
         expected.setId(1L);
         expected.setMpa(Rating.builder().id(5L).name(NC_17).build());
+        expected.setGenres(new HashSet<>());
 
         assertThat(films)
                 .as("Список фильмов")

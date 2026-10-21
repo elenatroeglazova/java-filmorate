@@ -28,6 +28,7 @@ import java.util.Set;
 import static java.time.Duration.ofMinutes;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static ru.yandex.practicum.filmorate.enums.RatingMPA.*;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -55,12 +56,14 @@ public abstract class BaseTest {
     protected Set<Genre> duplicateGenres = new HashSet<>();
     protected Rating rating;
     protected Set<Genre> genresPreset = new HashSet<>();
+    protected Set<Rating> mpaPreset = new HashSet<>();
 
     @BeforeAll
     protected void beforeAll() {
         filmStorage = filmService.getFilms();
         userStorage = userService.getUsers();
         populateGenresStorage();
+        populateMpaPresetStorage();
         singleGenre.add(Genre.builder().id(4L).build());
         fewGenres.addAll(List.of(Genre.builder().id(1L).build(), Genre.builder().id(4L).build()));
         duplicateGenres.addAll(List.of(Genre.builder().id(1L).build(),
@@ -151,5 +154,13 @@ public abstract class BaseTest {
         genresPreset.add(Genre.builder().id(4L).name("Триллер").build());
         genresPreset.add(Genre.builder().id(5L).name("Документальный").build());
         genresPreset.add(Genre.builder().id(6L).name("Боевик").build());
+    }
+
+    private void populateMpaPresetStorage() {
+        mpaPreset.add(Rating.builder().id(1L).name(G).build());
+        mpaPreset.add(Rating.builder().id(2L).name(PG).build());
+        mpaPreset.add(Rating.builder().id(3L).name(PG_13).build());
+        mpaPreset.add(Rating.builder().id(4L).name(R).build());
+        mpaPreset.add(Rating.builder().id(5L).name(NC_17).build());
     }
 }
