@@ -23,5 +23,7 @@ public interface UserStorage {
 
     boolean removeFriend(Long userId, Long friendId);
 
+    Collection<User> mutualFriends(Long userId, Long otherId);
+
     void clear();
 }

@@ -89,6 +89,21 @@ public class UserDbStorage implements UserStorage {
                    ))
             """;
 
+    private static final String MUTUAL_FRIENDS_SQL = """
+            SELECT u.*,
+                   f.friends AS friends
+            FROM users u
+            JOIN friends f1 ON f1.friend_id = u.id AND f1.user_id = :userId
+            JOIN friends f2 ON f2.friend_id = u.id AND f2.user_id = :otherId
+            LEFT JOIN (
+                SELECT fr.user_id,
+                       array_agg(DISTINCT fr.friend_id || ':' || fs.status) AS friends
+                FROM friends fr
+                JOIN friend_status fs ON fs.id = fr.status_id
+                GROUP BY fr.user_id
+            ) f ON f.user_id = u.id
+            """;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final UserResultSetExtractor extractor;
     private final DataSource dataSource;
@@ -175,6 +190,16 @@ public class UserDbStorage implements UserStorage {
 
         int deleted = namedParameterJdbcTemplate.update(DELETE_FRIEND_SQL, params);
         return deleted > 0;
+    }
+
+    @Override
+    public Collection<User> mutualFriends(Long userId, Long otherId) {
+        return namedParameterJdbcTemplate.query(
+                MUTUAL_FRIENDS_SQL,
+                new MapSqlParameterSource()
+                        .addValue("userId", userId)
+                        .addValue("otherId", otherId),
+                extractor);
     }
 
     @Override

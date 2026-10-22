@@ -79,6 +79,15 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public Collection<User> mutualFriends(Long userId, Long otherId) {
+        Set<Long> intersection = new HashSet<>(users.get(userId).getFriends().keySet());
+        intersection.retainAll(users.get(otherId).getFriends().keySet());
+        return intersection.stream()
+                .map(users::get)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public void clear() {
         users.clear();
     }

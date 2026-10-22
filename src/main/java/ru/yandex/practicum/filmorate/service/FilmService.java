@@ -6,34 +6,30 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Getter
 @RequiredArgsConstructor
 public class FilmService {
-    private final FilmStorage films;
+    private final FilmStorage filmStorage;
     private final UserService userService;
 
     public Collection<Film> films() {
         log.info("Получен запрос на получение всех фильмов.");
 
-        Collection<Film> all = films.findAll();
+        Collection<Film> all = filmStorage.findAll();
         log.debug("Всего фильмов: {}. Список фильмов: {}", all.size(), all);
         return all;
     }
 
     public Optional<Film> getById(Long id) {
         log.debug("Поиск фильма по id={}", id);
-        Optional<Film> film = films.findById(id);
+        Optional<Film> film = filmStorage.findById(id);
         film.ifPresentOrElse(
                 f -> log.debug("Фильм найден: {}", f),
                 () -> log.debug("Фильм с id={} не найден", id)
@@ -52,7 +48,7 @@ public class FilmService {
                         Продолжительность фильма {}""",
                 film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
 
-        films.create(film);
+        filmStorage.create(film);
         log.info("Фильм создан: id={}, название='{}'", film.getId(), film.getName());
         return film;
     }
@@ -69,7 +65,7 @@ public class FilmService {
                 filmUpdate.getReleaseDate(), filmUpdate.getDuration());
 
         Long updatedId = filmUpdate.getId();
-        films.findById(updatedId).ifPresentOrElse(
+        filmStorage.findById(updatedId).ifPresentOrElse(
                 f -> log.debug("Найден фильм {} по id {}", f, updatedId),
                 () -> {
                     log.error("Попытка обновить несуществующий фильм с id={}", updatedId);
@@ -77,7 +73,7 @@ public class FilmService {
                 }
         );
 
-        films.update(filmUpdate);
+        filmStorage.update(filmUpdate);
         log.info("Фильм с id={} обновлен, новое название='{}'", updatedId, filmUpdate.getName());
         return filmUpdate;
     }
@@ -93,10 +89,10 @@ public class FilmService {
                 }
         );
 
-        films.findById(filmId).ifPresentOrElse(
+        filmStorage.findById(filmId).ifPresentOrElse(
                 f -> {
                     log.debug("Фильм {} по id={}", f, filmId);
-                    films.addLike(filmId, userId);
+                    filmStorage.addLike(filmId, userId);
                     log.info("Поставлен лайк фильму id={} от пользователя id={}", filmId, userId);
                 },
                 () -> {
@@ -117,10 +113,10 @@ public class FilmService {
                 }
         );
 
-        films.findById(filmId).ifPresentOrElse(
+        filmStorage.findById(filmId).ifPresentOrElse(
                 f -> {
                     log.debug("Фильм {} найден по id={}", f, filmId);
-                    boolean isRemoved = films.removeLike(filmId, userId);
+                    boolean isRemoved = filmStorage.removeLike(filmId, userId);
 
                     if (isRemoved) {
                         log.info("Удален лайк от пользователя id={} у фильма id={}", userId, filmId);
@@ -138,47 +134,12 @@ public class FilmService {
     public Collection<Film> getMostPopular(int count) {
         log.info("Получен запрос на получение {} самых популярных фильмов", count);
 
-        Collection<Film> popular = films.findAll().stream()
-                .sorted(Comparator.comparing((Film film) -> film.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        Collection<Film> popular = filmStorage.mostPopular(count);
 
-        log.debug("Найдено популярных фильмов: {}, из общего списка - {}", popular.size(), films.findAll().size());
-        log.trace("Список фильмов: {}", films);
+        log.debug("Найдено популярных фильмов: {}, из общего списка - {}", popular.size(), filmStorage.findAll().size());
+        log.trace("Список фильмов: {}", filmStorage);
         log.trace("Список популярных фильмов: {}", popular);
 
         return popular;
-    }
-
-    public Collection<Genre> genres() {
-        log.info("Получен запрос на получение списка всех жанров.");
-
-        Collection<Genre> all = films.genres();
-        log.debug("Всего жанров: {}. Список жанров: {}", all.size(), all);
-        return all;
-    }
-
-    public Collection<Rating> ratings() {
-        log.info("Получен запрос на получение списка всех рейтингов.");
-
-        Collection<Rating> all = films.ratings();
-        log.debug("Всего записей с рейтингами: {}. Список рейтингов: {}", all.size(), all);
-        return all;
-    }
-
-    public Genre findGenreById(Long genreId) {
-        log.debug("Поиск жанра по id={}", genreId);
-        Genre genre = films.findGenreById(genreId);
-        log.debug("Жанр {} найден по id={}", genre, genreId);
-
-        return genre;
-    }
-
-    public Rating findRatingById(Long ratingId) {
-        log.debug("Поиск рейтинга по id={}", ratingId);
-        Rating rating = films.findRatingById(ratingId);
-        log.debug("Рейтинг {} найден по id={}", rating, ratingId);
-
-        return rating;
     }
 }

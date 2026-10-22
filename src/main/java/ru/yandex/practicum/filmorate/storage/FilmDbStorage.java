@@ -8,13 +8,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.extractors.FilmResultSetExtractor;
-import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
-import ru.yandex.practicum.filmorate.storage.mappers.RatingRowMapper;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -99,36 +95,41 @@ public class FilmDbStorage implements FilmStorage {
             WHERE film_id = :filmId AND user_id = :userId
             """;
 
-    private static final String FIND_ALL_GENRES_SQL = """
-            SELECT * FROM genres
-            """;
-
-    private static final String FIND_BY_ID_GENRE_SQL = """
-            SELECT * FROM genres
-            WHERE id = :genreId
-            """;
-
-    private static final String FIND_ALL_RATINGS_SQL = """
-            SELECT * FROM ratings
-            ORDER BY id
-            LIMIT 5
-            """;
-
-    private static final String FIND_BY_ID_RATING_SQL = """
-            SELECT * FROM ratings
-            WHERE id = :ratingId
-            """;
-
     private static final String MERGE_FILM_GENRE_SQL = """
             MERGE INTO film_genre (film_id, genre_id) KEY(film_id, genre_id)
             VALUES (:filmId, :genreId)
             """;
 
+    private static final String MOST_POPULAR_FILMS_SQL = """
+            SELECT f.*,
+                   g.genres          AS genres,
+                   l.liked_user_ids  AS liked_user_ids,
+                   l.likes_count     AS likes_count,
+                   r.id              AS rating_id,
+                   r.name            AS rating_name
+            FROM films f
+            JOIN ratings r ON r.id = f.rating_id
+            LEFT JOIN (
+                SELECT fg.film_id,
+                       array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
+                FROM film_genre fg
+                JOIN genres gen ON gen.id = fg.genre_id
+                GROUP BY fg.film_id
+            ) g ON g.film_id = f.id
+            LEFT JOIN (
+                SELECT ls.film_id,
+                       array_agg(DISTINCT ls.user_id) AS liked_user_ids,
+                       count(DISTINCT ls.user_id)     AS likes_count
+                FROM likes ls
+                GROUP BY ls.film_id
+            ) l ON l.film_id = f.id
+            ORDER BY COALESCE(l.likes_count, 0) DESC, f.id
+            LIMIT :count
+            """;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmResultSetExtractor extractor;
     private final DataSource dataSource;
-    private final GenreRowMapper genreRowMapper;
-    private final RatingRowMapper ratingRowMapper;
 
     @Override
     public Film create(Film film) {
@@ -212,31 +213,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Genre> genres() {
-        return namedParameterJdbcTemplate.query(FIND_ALL_GENRES_SQL, genreRowMapper);
-    }
-
-    @Override
-    public Collection<Rating> ratings() {
-        return namedParameterJdbcTemplate.query(FIND_ALL_RATINGS_SQL, ratingRowMapper);
-    }
-
-    @Override
-    public Genre findGenreById(Long genreId) {
-        MapSqlParameterSource params = new MapSqlParameterSource("genreId", genreId);
-        List<Genre> genres = namedParameterJdbcTemplate.query(FIND_BY_ID_GENRE_SQL, params, genreRowMapper);
-
-        return genres.stream().findAny().orElseThrow(() ->
-                new NotFoundException("Жанр по id=" + genreId + " не найден"));
-    }
-
-    @Override
-    public Rating findRatingById(Long ratingId) {
-        MapSqlParameterSource params = new MapSqlParameterSource("ratingId", ratingId);
-        List<Rating> ratings = namedParameterJdbcTemplate.query(FIND_BY_ID_RATING_SQL, params, ratingRowMapper);
-
-        return ratings.stream().findAny().orElseThrow(() ->
-                new NotFoundException("Рейтинг по id=" + ratingId + " не найден"));
+    public Collection<Film> mostPopular(int count) {
+        return namedParameterJdbcTemplate.query(
+                MOST_POPULAR_FILMS_SQL,
+                new MapSqlParameterSource("count", count),
+                extractor);
     }
 
     @Override

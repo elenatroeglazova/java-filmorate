@@ -60,8 +60,8 @@ public abstract class BaseTest {
 
     @BeforeAll
     protected void beforeAll() {
-        filmStorage = filmService.getFilms();
-        userStorage = userService.getUsers();
+        filmStorage = filmService.getFilmStorage();
+        userStorage = userService.getUserStorage();
         populateGenresStorage();
         populateMpaPresetStorage();
         singleGenre.add(Genre.builder().id(4L).build());

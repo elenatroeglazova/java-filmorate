@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -21,19 +22,19 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserStorage users;
+    private final UserStorage userStorage;
 
     public Collection<User> users() {
         log.info("Получен запрос на получение всех пользователей");
 
-        Collection<User> all = users.findAll();
+        Collection<User> all = userStorage.findAll();
         log.debug("Всего пользователей: {}. Список пользователей: {}", all.size(), all);
         return all;
     }
 
     public Optional<User> getById(Long id) {
         log.debug("Поиск пользователя по id={}", id);
-        Optional<User> user = users.findById(id);
+        Optional<User> user = userStorage.findById(id);
         user.ifPresentOrElse(
                 u -> log.debug("Пользователь {} найден по id={}", u, id),
                 () -> log.debug("Пользователь id={} не найден", id)
@@ -51,7 +52,7 @@ public class UserService {
             log.warn("Имя пользователя пустое, будет использован логин '{}'", user.getLogin());
             user.setName(user.getLogin());
         }
-        users.create(user);
+        userStorage.create(user);
         log.info("Пользователь создан: id={}, логин='{}'", user.getId(), user.getLogin());
         return user;
     }
@@ -69,7 +70,7 @@ public class UserService {
         Long updatedId = userUpdate.getId();
         checkUser(updatedId, "Попытка обновить несуществующего пользователя с id={}");
 
-        users.update(userUpdate);
+        userStorage.update(userUpdate);
         log.info("Пользователь с id={} обновлен, новый логин='{}'", updatedId, userUpdate.getLogin());
         return userUpdate;
     }
@@ -79,7 +80,7 @@ public class UserService {
         checkUser(friendId, "Попытка добавить несуществующего пользователя с id={} в друзья");
         checkUser(userId, "Попытка добавить друга несуществующему пользователю с id={}");
 
-        users.addFriend(userId, friendId);
+        userStorage.addFriend(userId, friendId);
         log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
@@ -88,7 +89,7 @@ public class UserService {
         checkUser(friendId, "Попытка удаления из друзей несуществующего пользователя id={}");
         checkUser(userId, "Попытка удаления из друзей у несуществующего пользователя id={}");
 
-        boolean isRemoved = users.removeFriend(userId, friendId);
+        boolean isRemoved = userStorage.removeFriend(userId, friendId);
 
         if (isRemoved) {
             log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
@@ -99,7 +100,7 @@ public class UserService {
         log.info("Получен запрос на получение списка друзей пользователя с id={}", id);
         checkUser(id, "Попытка получить список друзей несуществующего пользователя с id={}");
 
-        return users.friends(id);
+        return userStorage.friends(id);
     }
 
     public Collection<User> mutualFriends(Long userId, Long otherId) {
@@ -107,16 +108,15 @@ public class UserService {
         checkUser(userId, "Попытка получить список общих друзей для несуществующего пользователя id={}");
         checkUser(otherId, "Попытка получить список общих друзей для несуществующего пользователя id={}");
 
-        Set<Long> intersection = new HashSet<>(users.findById(userId).orElseThrow().getFriends().keySet());
-        intersection.retainAll(users.findById(otherId).orElseThrow().getFriends().keySet());
-        return intersection.stream()
-                .map(users::findById)
-                .flatMap(Optional::stream)
-                .collect(Collectors.toSet());
+        if (userId.equals(otherId)) {
+            throw new ValidationException("Id пользователей должны отличаться для получения списка общих друзей");
+        }
+
+        return userStorage.mutualFriends(userId, otherId);
     }
 
     private void checkUser(Long id, String errMessage) {
-        users.findById(id).ifPresentOrElse(
+        userStorage.findById(id).ifPresentOrElse(
                 u -> log.debug("Пользователь {} найден по id={}", u, id),
                 () -> {
                     log.error(errMessage, id);
