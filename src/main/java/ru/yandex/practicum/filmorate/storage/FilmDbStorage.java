@@ -381,6 +381,15 @@ public class FilmDbStorage implements FilmStorage {
             return Long.compare(a.getId(), b.getId());
         });
 
+        for (Film f : result) {
+            if (f.getLikes() == null) {
+                f.setLikes(new java.util.HashSet<>());
+            }
+            if (f.getDirectors() == null) {
+                f.setDirectors(new java.util.HashSet<>());
+            }
+        }
+
         return result;
     }
 }
