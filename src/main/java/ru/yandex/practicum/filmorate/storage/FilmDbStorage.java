@@ -346,7 +346,11 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> search(String query, String by) {
         String searchPattern = "%" + query.toLowerCase() + "%";
         StringBuilder sql = new StringBuilder(
-                "SELECT f.* FROM films f WHERE f.id IN ("
+                "SELECT f.*, COALESCE(lc.cnt, 0) AS like_count "
+                        + "FROM films f "
+                        + "LEFT JOIN (SELECT film_id, COUNT(*) AS cnt FROM film_likes GROUP BY film_id) lc "
+                        + "ON f.id = lc.film_id "
+                        + "WHERE f.id IN ("
                         + "SELECT DISTINCT f2.id FROM films f2 ");
         if (by.contains("director")) {
             sql.append("LEFT JOIN film_director fd ON f2.id = fd.film_id ");
@@ -361,8 +365,7 @@ public class FilmDbStorage implements FilmStorage {
             conditions.add("LOWER(d.name) LIKE :query");
         }
         sql.append(String.join(" OR ", conditions));
-        sql.append(") ");
-        sql.append("ORDER BY (SELECT COUNT(*) FROM film_likes fl WHERE fl.film_id = f.id) DESC");
+        sql.append(") ORDER BY like_count DESC, f.id ASC");
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         params.put("query", searchPattern);
         List<Film> films = namedParameterJdbcTemplate.query(sql.toString(), params, extractor);
