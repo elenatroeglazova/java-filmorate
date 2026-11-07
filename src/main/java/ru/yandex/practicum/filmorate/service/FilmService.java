@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
+
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import lombok.Getter;
@@ -150,5 +152,21 @@ public class FilmService {
             throw new ValidationException("Параметр sortBy должен быть 'year' или 'likes'");
         }
         return filmStorage.findByDirectorId(directorId, sortBy);
+    }
+
+    public List<Film> search(String query, String by) {
+        if (query == null || query.isBlank()) {
+            throw new IllegalArgumentException("Параметр query не может быть пустым");
+        }
+        if (by == null || by.isBlank()) {
+            throw new IllegalArgumentException("Параметр by не может быть пустым");
+        }
+        String[] searchParams = by.split(",");
+        for (String param : searchParams) {
+            if (!param.trim().equals("title") && !param.trim().equals("director")) {
+                throw new IllegalArgumentException("Параметр by может принимать значения: title, director");
+            }
+        }
+        return filmStorage.search(query, by);
     }
 }

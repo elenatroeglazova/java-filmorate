@@ -101,4 +101,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void clear() {
         films.clear();
     }
+
+    @Override
+    public java.util.List<Film> search(String query, String by) {
+        return java.util.Collections.emptyList();
+    }
 }

@@ -341,4 +341,30 @@ public class FilmDbStorage implements FilmStorage {
                 .toArray(SqlParameterSource[]::new);
         namedParameterJdbcTemplate.batchUpdate(MERGE_FILM_DIRECTOR_SQL, mappingParams);
     }
+
+    @Override
+    public List<Film> search(String query, String by) {
+        String searchPattern = "%" + query.toLowerCase() + "%";
+        StringBuilder sql = new StringBuilder("SELECT f.* FROM films f ");
+        if (by.contains("director")) {
+            sql.append("LEFT JOIN film_director fd ON f.id = fd.film_id ");
+            sql.append("LEFT JOIN directors d ON fd.director_id = d.id ");
+        }
+        sql.append("LEFT JOIN film_likes fl ON f.id = fl.film_id ");
+        sql.append("WHERE ");
+        java.util.List<String> conditions = new java.util.ArrayList<>();
+        if (by.contains("title")) {
+            conditions.add("LOWER(f.title) LIKE :query");
+        }
+        if (by.contains("director")) {
+            conditions.add("LOWER(d.name) LIKE :query");
+        }
+        sql.append(String.join(" OR ", conditions));
+        sql.append(" GROUP BY f.id ORDER BY COUNT(fl.user_id) DESC");
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("query", searchPattern);
+        List<Film> films = namedParameterJdbcTemplate.query(sql.toString(), params, extractor);
+        films.forEach(this::normalize);
+        return films;
+    }
 }
