@@ -345,30 +345,41 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> search(String query, String by) {
         String searchPattern = "%" + query.toLowerCase() + "%";
-        StringBuilder sql = new StringBuilder(
-                "SELECT f.* FROM films f "
-                        + "LEFT JOIN (SELECT film_id, COUNT(*) AS cnt FROM film_likes GROUP BY film_id) lc "
-                        + "ON f.id = lc.film_id "
-                        + "WHERE f.id IN ("
-                        + "SELECT DISTINCT f2.id FROM films f2 ");
-        if (by.contains("director")) {
-            sql.append("LEFT JOIN film_director fd ON f2.id = fd.film_id ");
-            sql.append("LEFT JOIN directors d ON fd.director_id = d.id ");
-        }
-        sql.append("WHERE ");
-        java.util.List<String> conditions = new java.util.ArrayList<>();
+        java.util.Set<Long> filmIds = new java.util.LinkedHashSet<>();
+
         if (by.contains("title")) {
-            conditions.add("LOWER(f2.title) LIKE :query");
+            String titleSql = "SELECT id FROM films WHERE LOWER(title) LIKE :query";
+            filmIds.addAll(namedParameterJdbcTemplate.queryForList(
+                    titleSql, java.util.Map.of("query", searchPattern), Long.class));
         }
+
         if (by.contains("director")) {
-            conditions.add("LOWER(d.name) LIKE :query");
+            String directorSql = "SELECT DISTINCT fd.film_id FROM film_director fd "
+                    + "JOIN directors d ON fd.director_id = d.id "
+                    + "WHERE LOWER(d.name) LIKE :query";
+            filmIds.addAll(namedParameterJdbcTemplate.queryForList(
+                    directorSql, java.util.Map.of("query", searchPattern), Long.class));
         }
-        sql.append(String.join(" OR ", conditions));
-        sql.append(") ORDER BY COALESCE(lc.cnt, 0) DESC, f.id ASC");
-        java.util.Map<String, Object> params = new java.util.HashMap<>();
-        params.put("query", searchPattern);
-        List<Film> films = namedParameterJdbcTemplate.query(sql.toString(), params, extractor);
+
+        if (filmIds.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+
+        String filmsSql = "SELECT * FROM films WHERE id IN (:ids)";
+        List<Film> films = namedParameterJdbcTemplate.query(
+                filmsSql, java.util.Map.of("ids", filmIds), extractor);
         films.forEach(this::normalize);
+
+        films.sort((a, b) -> {
+            int likesA = a.getLikes() == null ? 0 : a.getLikes().size();
+            int likesB = b.getLikes() == null ? 0 : b.getLikes().size();
+            int cmp = Integer.compare(likesB, likesA);
+            if (cmp != 0) {
+                return cmp;
+            }
+            return Long.compare(a.getId(), b.getId());
+        });
+
         return films;
     }
 }
