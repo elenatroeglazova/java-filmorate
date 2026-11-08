@@ -341,4 +341,55 @@ public class FilmDbStorage implements FilmStorage {
                 .toArray(SqlParameterSource[]::new);
         namedParameterJdbcTemplate.batchUpdate(MERGE_FILM_DIRECTOR_SQL, mappingParams);
     }
+
+    @Override
+    public List<Film> search(String query, String by) {
+        List<Film> allFilms = new java.util.ArrayList<>(findAll());
+        String lowerQuery = query.toLowerCase();
+        List<Film> result = new java.util.ArrayList<>();
+
+        for (Film film : allFilms) {
+            boolean matches = false;
+
+            if (by.contains("title") && film.getName() != null
+                    && film.getName().toLowerCase().contains(lowerQuery)) {
+                matches = true;
+            }
+
+            if (!matches && by.contains("director") && film.getDirectors() != null) {
+                for (Director director : film.getDirectors()) {
+                    if (director.getName() != null
+                            && director.getName().toLowerCase().contains(lowerQuery)) {
+                        matches = true;
+                        break;
+                    }
+                }
+            }
+
+            if (matches) {
+                result.add(film);
+            }
+        }
+
+        result.sort((a, b) -> {
+            int likesA = a.getLikes() == null ? 0 : a.getLikes().size();
+            int likesB = b.getLikes() == null ? 0 : b.getLikes().size();
+            int cmp = Integer.compare(likesB, likesA);
+            if (cmp != 0) {
+                return cmp;
+            }
+            return Long.compare(a.getId(), b.getId());
+        });
+
+        for (Film f : result) {
+            if (f.getLikes() == null) {
+                f.setLikes(new java.util.HashSet<>());
+            }
+            if (f.getDirectors() == null) {
+                f.setDirectors(new java.util.HashSet<>());
+            }
+        }
+
+        return result;
+    }
 }
