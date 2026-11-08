@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import java.util.List;
+
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,14 @@ public class FilmController {
         return filmService.getMostPopular(count);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getByDirector(
+            @PathVariable @Positive(message = "id режиссера должен быть положительным") Long directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен запрос на фильмы режиссёра с id={}, сортировка: {}", directorId, sortBy);
+        return filmService.getByDirectorId(directorId, sortBy);
+    }
+
     @PostMapping
     public Film create(@Validated(CreateSequence.class) @RequestBody Film film) {
         return filmService.create(film);
@@ -62,5 +72,10 @@ public class FilmController {
                            @PathVariable
                            @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
         filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        return filmService.search(query, by);
     }
 }

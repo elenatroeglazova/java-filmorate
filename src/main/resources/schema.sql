@@ -81,3 +81,13 @@ CREATE TABLE IF NOT EXISTS events (
 
 
 CREATE INDEX IF NOT EXISTS idx_events_user_timestamp ON events(user_id, event_timestamp, event_id);
+CREATE TABLE IF NOT EXISTS directors (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS film_director (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    director_id BIGINT NOT NULL REFERENCES directors(id) ON DELETE CASCADE,
+    film_id BIGINT NOT NULL REFERENCES films(id) ON DELETE CASCADE
+);

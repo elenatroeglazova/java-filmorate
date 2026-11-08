@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import java.util.List;
+
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Optional;
 
 public interface FilmStorage {
+    Collection<Film> findByDirectorId(Long directorId, String sortBy);
+
 
     Film create(Film film);
 
@@ -24,4 +28,6 @@ public interface FilmStorage {
     Collection<Film> mostPopular(int count);
 
     void clear();
+
+    List<Film> search(String query, String by);
 }

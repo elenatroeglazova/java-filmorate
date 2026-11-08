@@ -18,7 +18,7 @@ import java.util.List;
 public class GenreDbStorage implements GenreStorage {
 
     private static final String FIND_ALL_GENRES_SQL = """
-            SELECT * FROM genres
+            SELECT * FROM genres ORDER BY id
             """;
 
     private static final String FIND_BY_ID_GENRE_SQL = """
