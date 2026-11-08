@@ -96,10 +96,10 @@ class EventFeedTests {
         assertThat(feed).hasSize(4);
         assertThat(feed).extracting(Event::getUserId).containsOnly(userId);
         assertThat(feed).extracting(Event::getEventType)
-                .containsExactly(EventType.LIKE, EventType.FRIEND, EventType.LIKE, EventType.FRIEND);
+                .containsExactly(EventType.FRIEND, EventType.LIKE, EventType.FRIEND, EventType.LIKE);
         assertThat(feed).extracting(Event::getOperation)
-                .containsExactly(EventOperation.REMOVE, EventOperation.REMOVE, EventOperation.ADD, EventOperation.ADD);
-        assertThat(feed).extracting(Event::getEntityId).containsExactly(filmId, friendId, filmId, friendId);
+                .containsExactly(EventOperation.ADD, EventOperation.ADD, EventOperation.REMOVE, EventOperation.REMOVE);
+        assertThat(feed).extracting(Event::getEntityId).containsExactly(friendId, filmId, friendId, filmId);
         assertThat(feed).allSatisfy(event -> {
             assertThat(event.getTimestamp()).isBetween(before, System.currentTimeMillis());
             assertThat(event.getEventId()).isPositive();
@@ -108,9 +108,9 @@ class EventFeedTests {
         mvc.perform(get("/users/{id}/feed", userId)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(4))
                 .andExpect(jsonPath("$[0].userId").value(userId))
-                .andExpect(jsonPath("$[0].eventType").value("LIKE"))
-                .andExpect(jsonPath("$[0].operation").value("REMOVE"))
-                .andExpect(jsonPath("$[0].entityId").value(filmId))
+                .andExpect(jsonPath("$[0].eventType").value("FRIEND"))
+                .andExpect(jsonPath("$[0].operation").value("ADD"))
+                .andExpect(jsonPath("$[0].entityId").value(friendId))
                 .andExpect(jsonPath("$[0].eventId").value(feed.getFirst().getEventId()))
                 .andExpect(jsonPath("$[0].timestamp").value(feed.getFirst().getTimestamp()));
     }
@@ -136,9 +136,43 @@ class EventFeedTests {
         assertThat(feed).hasSize(3);
         assertThat(feed).extracting(Event::getEventType).containsOnly(EventType.REVIEW);
         assertThat(feed).extracting(Event::getOperation)
-                .containsExactly(EventOperation.REMOVE, EventOperation.UPDATE, EventOperation.ADD);
+                .containsExactly(EventOperation.ADD, EventOperation.UPDATE, EventOperation.REMOVE);
         assertThat(feed).extracting(Event::getEntityId).containsOnly(reviewId);
         assertThat(events.findByUserId(friendId)).isEmpty();
+    }
+
+    @Test
+    void feedReturnsMixedEventsInPostmanScenarioOrder() throws Exception {
+        mvc.perform(put("/users/{id}/friends/{friend}", userId, friendId)).andExpect(status().isOk());
+        mvc.perform(delete("/users/{id}/friends/{friend}", userId, friendId)).andExpect(status().isOk());
+        String response = mvc.perform(post("/reviews").contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newReview())))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        long reviewId = objectMapper.readTree(response).get("reviewId").asLong();
+        Review updated = newReview();
+        updated.setReviewId(reviewId);
+        updated.setContent("Обновлённый отзыв");
+        mvc.perform(put("/reviews").contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updated))).andExpect(status().isOk());
+        mvc.perform(delete("/reviews/{id}", reviewId)).andExpect(status().isOk());
+        mvc.perform(put("/films/{id}/like/{user}", filmId, userId)).andExpect(status().isOk());
+        mvc.perform(delete("/films/{id}/like/{user}", filmId, userId)).andExpect(status().isOk());
+
+        String feedResponse = mvc.perform(get("/users/{id}/feed", userId))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        List<Event> feed = objectMapper.readerForListOf(Event.class).readValue(feedResponse);
+        assertThat(feed).hasSize(7);
+        assertThat(feed).extracting(Event::getUserId).containsOnly(userId);
+        assertThat(feed).extracting(Event::getEventType).containsExactly(
+                EventType.FRIEND, EventType.FRIEND, EventType.REVIEW, EventType.REVIEW,
+                EventType.REVIEW, EventType.LIKE, EventType.LIKE);
+        assertThat(feed).extracting(Event::getOperation).containsExactly(
+                EventOperation.ADD, EventOperation.REMOVE, EventOperation.ADD, EventOperation.UPDATE,
+                EventOperation.REMOVE, EventOperation.ADD, EventOperation.REMOVE);
+        assertThat(feed).extracting(Event::getEntityId)
+                .containsExactly(friendId, friendId, reviewId, reviewId, reviewId, filmId, filmId);
+        assertThat(feed).extracting(Event::getTimestamp).isSorted();
+        assertThat(feed).extracting(Event::getEventId).isSorted();
     }
 
     @Test
@@ -156,7 +190,7 @@ class EventFeedTests {
         Event second = storeEvent(userId, 100L, EventType.REVIEW, EventOperation.UPDATE);
         Event older = storeEvent(userId, 50L, EventType.FRIEND, EventOperation.REMOVE);
         storeEvent(friendId, 200L, EventType.LIKE, EventOperation.ADD);
-        assertThat(events.findByUserId(userId)).containsExactly(second, first, older);
+        assertThat(events.findByUserId(userId)).containsExactly(older, first, second);
     }
 
     @ParameterizedTest

@@ -58,7 +58,7 @@ public class EventDbStorage implements EventStorage {
                 SELECT *
                 FROM events
                 WHERE user_id = :userId
-                ORDER BY event_timestamp DESC, event_id DESC
+                ORDER BY event_timestamp ASC, event_id ASC
                 """;
 
         return jdbcTemplate.query(
