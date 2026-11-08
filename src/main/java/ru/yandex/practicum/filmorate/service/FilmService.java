@@ -135,10 +135,10 @@ public class FilmService {
         );
     }
 
-    public Collection<Film> getMostPopular(int count) {
+    public Collection<Film> getMostPopular(int count, Long genreId, Integer year) {
         log.info("Получен запрос на получение {} самых популярных фильмов", count);
 
-        Collection<Film> popular = filmStorage.mostPopular(count);
+        Collection<Film> popular = filmStorage.mostPopular(count, genreId, year);
 
         log.debug("Найдено популярных фильмов: {}, из общего списка - {}", popular.size(), filmStorage.findAll().size());
         log.trace("Список фильмов: {}", filmStorage);
