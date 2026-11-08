@@ -19,6 +19,8 @@ public interface FilmStorage {
 
     Collection<Film> findAll();
 
+    Collection<Film> findByIds(Collection<Long> filmIds);
+
     Optional<Film> findById(Long id);
 
     void addLike(Long filmId, Long userId);

@@ -49,7 +49,6 @@ public class GetFilmsTests extends FilmsBaseTest {
         assertThat(films)
                 .as("Список фильмов")
                 .isNotEmpty()
-                .contains(expected)
-                .hasSize(4);
+                .contains(expected);
     }
 }

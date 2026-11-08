@@ -53,6 +53,30 @@ public class FilmDbStorage implements FilmStorage {
             ) l ON l.film_id = f.id
             """;
 
+    private static final String FIND_BY_IDS_SQL = """
+            SELECT f.*,
+                   g.genres          AS genres,
+                   l.liked_user_ids  AS liked_user_ids,
+                   r.id              AS rating_id,
+                   r.name            AS rating_name
+            FROM films f
+            JOIN ratings r ON r.id = f.rating_id
+            LEFT JOIN (
+                SELECT fg.film_id,
+                       array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
+                FROM film_genre fg
+                JOIN genres gen ON gen.id = fg.genre_id
+                GROUP BY fg.film_id
+            ) g ON g.film_id = f.id
+            LEFT JOIN (
+                SELECT ls.film_id,
+                       array_agg(DISTINCT ls.user_id) AS liked_user_ids
+                FROM likes ls
+                GROUP BY ls.film_id
+            ) l ON l.film_id = f.id
+            WHERE f.id IN (:filmIds)
+            """;
+
     private static final String FIND_BY_ID_SQL = """
             SELECT f.*,
                    g.genres         AS genres,
@@ -245,6 +269,18 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         return namedParameterJdbcTemplate.query(FIND_ALL_SQL, extractor);
+    }
+
+    @Override
+    public Collection<Film> findByIds(Collection<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return List.of();
+        }
+
+        return namedParameterJdbcTemplate.query(
+                FIND_BY_IDS_SQL,
+                new MapSqlParameterSource("filmIds", filmIds),
+                extractor);
     }
 
     @Override

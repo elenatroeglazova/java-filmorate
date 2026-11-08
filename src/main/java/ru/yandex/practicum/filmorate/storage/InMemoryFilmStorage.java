@@ -24,6 +24,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> findByIds(Collection<Long> filmIds) {
+        return List.of();
+    }
+
+    @Override
     public Optional<Film> findById(Long id) {
         return Optional.ofNullable(films.get(id));
     }

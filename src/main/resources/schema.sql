@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS likes (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     film_id BIGINT NOT NULL REFERENCES films(id),
-    user_id BIGINT NOT NULL REFERENCES users(id)
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    CONSTRAINT uq_likes_film_user UNIQUE (film_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS friends (

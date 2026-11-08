@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
+import ru.yandex.practicum.filmorate.base.GenresBaseTest;
 import ru.yandex.practicum.filmorate.controller.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -17,7 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FilmGenresTests extends FilmsBaseTest {
+public class FilmGenresTests extends GenresBaseTest {
 
     @Test
     void getAllGenresTest() throws IOException, InterruptedException {
