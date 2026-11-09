@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.service.EventService;
@@ -49,10 +50,19 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> mutualFriends(@PathVariable
-                                          @Positive(message = "id пользователя должен быть положительным числом") Long id,
+                                          @Positive(message = "id пользователя должен быть положительным числом")
+                                          Long id,
                                           @PathVariable
-                                          @Positive(message = "id пользователя должен быть положительным числом") Long otherId) {
+                                          @Positive(message = "id пользователя должен быть положительным числом")
+                                          Long otherId) {
         return userService.mutualFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> recommendations(@PathVariable
+                                            @Positive(message = "id пользователя должен быть положительным числом")
+                                            Long id) {
+        return userService.recommend(id);
     }
 
     @PostMapping
