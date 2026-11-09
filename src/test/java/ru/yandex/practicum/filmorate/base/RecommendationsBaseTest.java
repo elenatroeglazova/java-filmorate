@@ -25,7 +25,7 @@ public class RecommendationsBaseTest extends BaseTest {
                     .build());
         }
 
-        for (int i = 1; i <= 9 ; i++) {
+        for (int i = 1; i <= 9; i++) {
             userStorage.create(User.builder()
                     .email("rec_user" + i + "@email.ru")
                     .login("rec_user" + i)
