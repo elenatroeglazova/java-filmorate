@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.Event;
@@ -14,7 +15,6 @@ import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -32,9 +32,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public Optional<User> user(@PathVariable
+    public User user(@PathVariable
                                @Positive(message = "id пользователя должен быть положительным числом") Long id) {
-        return userService.getById(id);
+        return userService.getById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
     @GetMapping

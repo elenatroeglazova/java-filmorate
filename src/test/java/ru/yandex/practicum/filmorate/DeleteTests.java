@@ -11,10 +11,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -39,8 +42,10 @@ class DeleteTests {
     void setUp() {
         userId = insert("users", Map.of("email", "author@example.com", "login", "author"));
         otherUserId = insert("users", Map.of("email", "reader@example.com", "login", "reader"));
-        filmId = insert("films", Map.of("title", "Фильм", "rating_id", 1));
-        otherFilmId = insert("films", Map.of("title", "Другой фильм", "rating_id", 1));
+        filmId = insert("films", Map.of("title", "Фильм", "rating_id", 1,
+                "release_date", LocalDate.of(2020, 1, 1), "duration", 100));
+        otherFilmId = insert("films", Map.of("title", "Другой фильм", "rating_id", 1,
+                "release_date", LocalDate.of(2021, 1, 1), "duration", 120));
         directorId = insert("directors", Map.of("name", "Режиссер"));
         for (long id : new long[]{filmId, otherFilmId}) {
             jdbc.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, 1)", id);
@@ -67,7 +72,12 @@ class DeleteTests {
 
     @Test
     void deleteUserRemovesDependenciesAndPreservesOtherData() throws Exception {
+        mvc.perform(get("/users/{userId}", userId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId));
         mvc.perform(delete("/users/{userId}", userId)).andExpect(status().isOk());
+        mvc.perform(get("/users/{userId}", userId)).andExpect(status().isNotFound());
+        mvc.perform(get("/users/{userId}", otherUserId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(otherUserId));
 
         assertCount("SELECT COUNT(*) FROM users WHERE id = ?", userId, 0);
         assertCount("SELECT COUNT(*) FROM users WHERE id = ?", otherUserId, 1);
@@ -88,7 +98,12 @@ class DeleteTests {
 
     @Test
     void deleteFilmRemovesDependenciesAndPreservesOtherData() throws Exception {
+        mvc.perform(get("/films/{filmId}", filmId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(filmId));
         mvc.perform(delete("/films/{filmId}", filmId)).andExpect(status().isOk());
+        mvc.perform(get("/films/{filmId}", filmId)).andExpect(status().isNotFound());
+        mvc.perform(get("/films/{filmId}", otherFilmId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(otherFilmId));
 
         assertCount("SELECT COUNT(*) FROM films WHERE id = ?", filmId, 0);
         assertCount("SELECT COUNT(*) FROM films WHERE id = ?", otherFilmId, 1);
@@ -112,6 +127,8 @@ class DeleteTests {
 
     @Test
     void rejectUnknownIds() throws Exception {
+        mvc.perform(get("/users/{id}", Long.MAX_VALUE)).andExpect(status().isNotFound());
+        mvc.perform(get("/films/{id}", Long.MAX_VALUE)).andExpect(status().isNotFound());
         mvc.perform(delete("/users/{id}", Long.MAX_VALUE)).andExpect(status().isNotFound());
         mvc.perform(delete("/films/{id}", Long.MAX_VALUE)).andExpect(status().isNotFound());
         assertCount("SELECT COUNT(*) FROM users WHERE id = ?", userId, 1);
