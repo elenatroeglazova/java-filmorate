@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.base.BaseTest;
 import ru.yandex.practicum.filmorate.base.RecommendationsBaseTest;
 import ru.yandex.practicum.filmorate.model.Film;
 
