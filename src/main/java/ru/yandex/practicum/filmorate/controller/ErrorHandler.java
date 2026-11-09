@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -53,6 +54,15 @@ public class ErrorHandler {
     public ErrorResponse handleDataIntegrityViolation(final DataIntegrityViolationException ex) {
         return ErrorResponse.builder()
                 .error(ex.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(CONFLICT)
+    public ErrorResponse handleDuplicateKey(final DuplicateKeyException ex) {
+        return ErrorResponse.builder()
+                .error(ex.getClass() + ": " + ex.getMessage() + " Stack trace: " +
+                        Arrays.toString(ex.getStackTrace()) + " Caused by: " + ex.getCause())
                 .build();
     }
 

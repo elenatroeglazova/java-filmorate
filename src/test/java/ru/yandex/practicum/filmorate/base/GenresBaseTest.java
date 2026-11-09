@@ -17,6 +17,7 @@ public class GenresBaseTest extends BaseTest {
 
     @BeforeAll
     public void setUp() {
+        createBaseFilm();
         singleGenreFilm = Film.builder()
                 .name("Кошмар на улице Вязов")
                 .releaseDate(LocalDate.of(1984, 11, 9))

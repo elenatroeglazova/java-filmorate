@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
 import ru.yandex.practicum.filmorate.base.GenresBaseTest;
 import ru.yandex.practicum.filmorate.controller.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -169,7 +168,7 @@ public class FilmGenresTests extends GenresBaseTest {
         assertThat(film).as("Фильм по id=4").isNotNull();
         assertThat(film.getGenres()).as("Жанры фильма с id=4")
                 .isNotEmpty()
-                .containsExactlyInAnyOrder(Genre.builder().id(1L).name("Комедия").build(),
-                        Genre.builder().id(4L).name("Триллер").build());
+                .containsExactlyInAnyOrder(Genre.builder().id(2L).name("Драма").build(),
+                        Genre.builder().id(3L).name("Мультфильм").build());
     }
 }

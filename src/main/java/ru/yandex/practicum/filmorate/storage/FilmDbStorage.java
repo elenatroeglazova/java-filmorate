@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -56,6 +57,7 @@ public class FilmDbStorage implements FilmStorage {
     private static final String FIND_BY_IDS_SQL = """
             SELECT f.*,
                    g.genres          AS genres,
+                   d.directors       AS directors,
                    l.liked_user_ids  AS liked_user_ids,
                    r.id              AS rating_id,
                    r.name            AS rating_name
@@ -68,6 +70,13 @@ public class FilmDbStorage implements FilmStorage {
                 JOIN genres gen ON gen.id = fg.genre_id
                 GROUP BY fg.film_id
             ) g ON g.film_id = f.id
+            LEFT JOIN (
+                SELECT fd.film_id,
+                       array_agg(DISTINCT d.id || ':' || COALESCE(d.name, '')) AS directors
+                FROM film_director fd
+                JOIN directors d ON d.id = fd.director_id
+                GROUP BY fd.film_id
+            ) d ON d.film_id = f.id
             LEFT JOIN (
                 SELECT ls.film_id,
                        array_agg(DISTINCT ls.user_id) AS liked_user_ids
@@ -329,6 +338,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void clear() {
+        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
+        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbc.execute("TRUNCATE TABLE film_genre RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
+        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 
     private Film normalize(Film film) {
