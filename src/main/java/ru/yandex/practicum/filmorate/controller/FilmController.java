@@ -60,6 +60,12 @@ public class FilmController {
         return filmService.update(filmUpdate);
     }
 
+    @DeleteMapping("/{filmId}")
+    public void delete(@PathVariable
+                       @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
+        filmService.delete(filmId);
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public void like(@PathVariable
                      @Positive(message = "id фильма должен быть положительным числом") Long id,

@@ -75,6 +75,12 @@ public class UserController {
         return userService.update(userUpdate);
     }
 
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable
+                       @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
+        userService.delete(userId);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable
                           @Positive(message = "id пользователя должен быть положительным числом") Long id,
