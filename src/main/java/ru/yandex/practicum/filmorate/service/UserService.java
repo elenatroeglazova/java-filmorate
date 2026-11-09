@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -22,6 +25,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final EventService eventService;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
@@ -76,15 +80,21 @@ public class UserService {
         return userUpdate;
     }
 
+    @Transactional
     public void addFriend(Long userId, Long friendId) {
         log.info("Получен запрос на добавление друга id={} пользователю id={}", friendId, userId);
         checkUser(friendId, "Попытка добавить несуществующего пользователя с id={} в друзья");
         checkUser(userId, "Попытка добавить друга несуществующему пользователю с id={}");
 
+        if (userStorage.findById(userId).orElseThrow().getFriends().containsKey(friendId)) {
+            return;
+        }
         userStorage.addFriend(userId, friendId);
+        eventService.record(userId, EventType.FRIEND, EventOperation.ADD, friendId);
         log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
+    @Transactional
     public void removeFriend(Long userId, Long friendId) {
         log.info("Получен запрос на удаление друга id={} из списка друзей пользователя id={}", friendId, userId);
         checkUser(friendId, "Попытка удаления из друзей несуществующего пользователя id={}");
@@ -93,6 +103,7 @@ public class UserService {
         boolean isRemoved = userStorage.removeFriend(userId, friendId);
 
         if (isRemoved) {
+            eventService.record(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
             log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
         }
     }

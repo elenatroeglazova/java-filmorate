@@ -328,12 +328,27 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> mostPopular(int count) {
-        return namedParameterJdbcTemplate.query(
-                MOST_POPULAR_FILMS_SQL,
-                new MapSqlParameterSource("count", count),
-                extractor
-        ).stream().map(this::normalize).toList();
+    public Collection<Film> mostPopular(int count, Long genreId, Integer year) {
+        List<Film> all = new java.util.ArrayList<>(findAll());
+
+        if (genreId != null) {
+            all.removeIf(f -> f.getGenres() == null
+                    || f.getGenres().stream().noneMatch(g -> g.getId().equals(genreId)));
+        }
+
+        if (year != null) {
+            all.removeIf(f -> f.getReleaseDate() == null
+                    || f.getReleaseDate().getYear() != year);
+        }
+
+        all.sort((a, b) -> {
+            int likesA = a.getLikes() == null ? 0 : a.getLikes().size();
+            int likesB = b.getLikes() == null ? 0 : b.getLikes().size();
+            int cmp = Integer.compare(likesB, likesA);
+            return cmp != 0 ? cmp : Long.compare(a.getId(), b.getId());
+        });
+
+        return all.stream().limit(count).map(this::normalize).toList();
     }
 
     @Override

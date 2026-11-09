@@ -7,6 +7,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
@@ -21,6 +23,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final EventService eventService;
+
+    @GetMapping("/{id}/feed")
+    public Collection<Event> feed(@PathVariable
+                                  @Positive(message = "id пользователя должен быть положительным числом") Long id) {
+        return eventService.getFeed(id);
+    }
 
     @GetMapping("/{id}")
     public Optional<User> user(@PathVariable

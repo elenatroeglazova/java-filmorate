@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -14,6 +16,7 @@ import java.util.Collection;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
+    private final EventService eventService;
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
@@ -23,21 +26,27 @@ public class ReviewService {
         checkUser(review.getUserId());
         filmStorage.findById(review.getFilmId()).orElseThrow(() ->
                 new NotFoundException("Фильм с id = " + review.getFilmId() + " не найден"));
-        return reviewStorage.create(review);
+        Review created = reviewStorage.create(review);
+        eventService.record(created.getUserId(), EventType.REVIEW, EventOperation.ADD, created.getReviewId());
+        return created;
     }
 
     @Transactional
     public Review update(Review review) {
         getById(review.getReviewId());
         reviewStorage.update(review);
-        return getById(review.getReviewId());
+        Review updated = getById(review.getReviewId());
+        eventService.record(updated.getUserId(), EventType.REVIEW, EventOperation.UPDATE, updated.getReviewId());
+        return updated;
     }
 
     @Transactional
     public void delete(Long id) {
+        Review review = getById(id);
         if (!reviewStorage.delete(id)) {
             throw new NotFoundException("Отзыв с id = " + id + " не найден");
         }
+        eventService.record(review.getUserId(), EventType.REVIEW, EventOperation.REMOVE, id);
     }
 
     public Review getById(Long id) {

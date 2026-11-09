@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -20,6 +23,7 @@ import java.util.Optional;
 @Getter
 @RequiredArgsConstructor
 public class FilmService {
+    private final EventService eventService;
     private final FilmStorage filmStorage;
     private final UserService userService;
 
@@ -82,6 +86,7 @@ public class FilmService {
         return filmUpdate;
     }
 
+    @Transactional
     public void like(Long filmId, Long userId) {
         log.info("Получен запрос на добавление лайка фильму с id={} от пользователя с id={}", filmId, userId);
 
@@ -96,7 +101,11 @@ public class FilmService {
         filmStorage.findById(filmId).ifPresentOrElse(
                 f -> {
                     log.debug("Фильм {} по id={}", f, filmId);
+                    if (f.getLikes().contains(userId)) {
+                        return;
+                    }
                     filmStorage.addLike(filmId, userId);
+                    eventService.record(userId, EventType.LIKE, EventOperation.ADD, filmId);
                     log.info("Поставлен лайк фильму id={} от пользователя id={}", filmId, userId);
                 },
                 () -> {
@@ -106,6 +115,7 @@ public class FilmService {
         );
     }
 
+    @Transactional
     public void removeLike(Long filmId, Long userId) {
         log.info("Получен запрос на удаление лайка у фильма с id={} от пользователя с id={}", filmId, userId);
 
@@ -123,6 +133,7 @@ public class FilmService {
                     boolean isRemoved = filmStorage.removeLike(filmId, userId);
 
                     if (isRemoved) {
+                        eventService.record(userId, EventType.LIKE, EventOperation.REMOVE, filmId);
                         log.info("Удален лайк от пользователя id={} у фильма id={}", userId, filmId);
                     } else {
                         log.warn("Лайк от пользователя id={} у фильма id={} не найден", userId, filmId);
@@ -135,10 +146,10 @@ public class FilmService {
         );
     }
 
-    public Collection<Film> getMostPopular(int count) {
+    public Collection<Film> getMostPopular(int count, Long genreId, Integer year) {
         log.info("Получен запрос на получение {} самых популярных фильмов", count);
 
-        Collection<Film> popular = filmStorage.mostPopular(count);
+        Collection<Film> popular = filmStorage.mostPopular(count, genreId, year);
 
         log.debug("Найдено популярных фильмов: {}, из общего списка - {}", popular.size(), filmStorage.findAll().size());
         log.trace("Список фильмов: {}", filmStorage);
