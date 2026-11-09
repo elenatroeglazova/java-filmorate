@@ -15,7 +15,7 @@ public class RecommendationsBaseTest extends BaseTest {
     }
 
     private void prepareRecommendationsTestData() {
-        for (int i = 1; i <= 12 ; i++) {
+        for (int i = 1; i <= 12; i++) {
             filmStorage.create(Film.builder()
                     .name("rec_film_" + i)
                     .releaseDate(LocalDate.now())
