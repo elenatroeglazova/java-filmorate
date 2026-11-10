@@ -12,7 +12,7 @@ public interface FilmStorage {
 
     Film create(Film film);
 
-    void update(Film filmUpdate);
+    Film update(Film filmUpdate);
 
     boolean delete(Long id);
 

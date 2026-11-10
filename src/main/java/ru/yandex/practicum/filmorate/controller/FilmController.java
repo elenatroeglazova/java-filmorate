@@ -24,7 +24,7 @@ public class FilmController {
 
     @GetMapping("/{filmId}")
     public Film film(@PathVariable
-                               @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
+                     @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
         return filmService.getById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
@@ -52,9 +52,9 @@ public class FilmController {
 
     @GetMapping("/common")
     public Collection<Film> common(@RequestParam
-                                        @Positive(message = "id пользователя должен быть положительным числом") long userId,
-                                        @RequestParam
-                                        @Positive(message = "id друга должен быть положительным числом") long friendId) {
+                                   @Positive(message = "id пользователя должен быть положительным числом") long userId,
+                                   @RequestParam
+                                   @Positive(message = "id друга должен быть положительным числом") long friendId) {
         return filmService.common(userId, friendId);
     }
 
@@ -83,10 +83,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable
-                           @Positive(message = "id фильма должен быть положительным числом") Long id,
-                           @PathVariable
-                           @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
+    public void removeLike(@PathVariable Long id,
+                           @PathVariable Long userId) {
         filmService.removeLike(id, userId);
     }
 

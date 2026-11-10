@@ -79,9 +79,9 @@ public class FilmService {
                 }
         );
 
-        filmStorage.update(filmUpdate);
-        log.info("Фильм с id={} обновлен, новое название='{}'", updatedId, filmUpdate.getName());
-        return filmUpdate;
+        Film updatedFilm = filmStorage.update(filmUpdate);
+        log.info("Фильм с id={} обновлен, новое название='{}'", updatedId, updatedFilm.getName());
+        return updatedFilm;
     }
 
     public void delete(Long id) {
@@ -124,14 +124,7 @@ public class FilmService {
     @Transactional
     public void removeLike(Long filmId, Long userId) {
         log.info("Получен запрос на удаление лайка у фильма с id={} от пользователя с id={}", filmId, userId);
-
-        userService.getById(userId).ifPresentOrElse(
-                u -> log.debug("Пользователь {} найден по id={}", u, userId),
-                () -> {
-                    log.error("Попытка удалить лайк от несуществующего пользователя с id={}", userId);
-                    throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-                }
-        );
+        userService.checkUser(userId, "Попытка удалить лайк от несуществующего пользователя с id={}");
 
         filmStorage.findById(filmId).ifPresentOrElse(
                 f -> {

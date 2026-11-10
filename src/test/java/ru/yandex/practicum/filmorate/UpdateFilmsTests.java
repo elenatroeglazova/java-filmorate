@@ -2,14 +2,19 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
+import ru.yandex.practicum.filmorate.enums.RatingMPA;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Duration.ofMinutes;
@@ -51,6 +56,14 @@ public class UpdateFilmsTests extends FilmsBaseTest {
         if (respFilm.getLikes() != null) {
             film.setLikes(new HashSet<>(respFilm.getLikes()));
         }
+
+        Rating copyRating = rating;
+        copyRating.setName(RatingMPA.NC_17);
+        film.setGenres(singleGenre.stream().peek(g -> g.setName("Триллер"))
+                        .collect(Collectors.toSet()))
+                .setMpa(copyRating)
+                .setDirectors(Collections.emptySet());
+
         assertEquals(film, respFilm, "В ответе должны быть данные фильма из запроса");
     }
 

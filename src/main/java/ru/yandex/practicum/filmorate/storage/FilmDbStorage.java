@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -262,7 +263,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void update(Film filmUpdate) {
+    public Film update(Film filmUpdate) {
         SqlParameterSource params = new BeanPropertySqlParameterSource(filmUpdate);
         int updated = namedParameterJdbcTemplate.update(UPDATE_FILM_SQL, params);
 
@@ -272,6 +273,9 @@ public class FilmDbStorage implements FilmStorage {
 
         updateGenres(filmUpdate);
         updateDirectors(filmUpdate);
+
+        return findById(filmUpdate.getId()).orElseThrow(() ->
+                new NotFoundException("Не удалось найти фильм с id=" + filmUpdate.getId()));
     }
 
     @Override
@@ -302,7 +306,9 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> findById(Long id) {
         MapSqlParameterSource params = new MapSqlParameterSource("id", id);
         List<Film> films = namedParameterJdbcTemplate.query(FIND_BY_ID_SQL, params, extractor);
-        return films.stream().findFirst().map(this::normalize);
+        return Optional.ofNullable(films)
+                .filter(list -> !list.isEmpty())
+                .map(List::getFirst);
     }
 
     @Override
@@ -313,7 +319,7 @@ public class FilmDbStorage implements FilmStorage {
                 sql,
                 new MapSqlParameterSource("directorId", directorId),
                 extractor
-        ).stream().map(this::normalize).toList();
+        );
     }
 
     @Override
@@ -354,7 +360,7 @@ public class FilmDbStorage implements FilmStorage {
             return cmp != 0 ? cmp : Long.compare(a.getId(), b.getId());
         });
 
-        return all.stream().limit(count).map(this::normalize).toList();
+        return all.stream().limit(count).toList();
     }
 
     @Override
@@ -365,13 +371,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
         jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
         jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
-    }
-
-    private Film normalize(Film film) {
-        if (film.getLikes() == null) film.setLikes(new HashSet<>());
-        if (film.getDirectors() == null) film.setDirectors(new HashSet<>());
-        if (film.getGenres() == null) film.setGenres(new HashSet<>());
-        return film;
     }
 
     private void updateGenres(Film film) {
