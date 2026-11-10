@@ -83,10 +83,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable
-                          @Positive(message = "id пользователя должен быть положительным числом") Long id,
-                          @PathVariable
-                          @Positive(message = "id друга должен быть положительным числом") Long friendId) {
+    public void addFriend(@PathVariable Long id,
+                          @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
     }
 
