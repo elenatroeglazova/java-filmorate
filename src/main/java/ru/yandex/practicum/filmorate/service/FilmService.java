@@ -84,6 +84,14 @@ public class FilmService {
         return filmUpdate;
     }
 
+    public void delete(Long id) {
+        log.info("Получен запрос на удаление фильма с id={}", id);
+        if (!filmStorage.delete(id)) {
+            throw new NotFoundException("Фильм с id = " + id + " не найден");
+        }
+        log.info("Фильм с id={} удален", id);
+    }
+
     @Transactional
     public void like(Long filmId, Long userId) {
         log.info("Получен запрос на добавление лайка фильму с id={} от пользователя с id={}", filmId, userId);

@@ -80,6 +80,14 @@ public class UserService {
         return userUpdate;
     }
 
+    public void delete(Long id) {
+        log.info("Получен запрос на удаление пользователя с id={}", id);
+        if (!userStorage.delete(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        log.info("Пользователь с id={} удален", id);
+    }
+
     @Transactional
     public void addFriend(Long userId, Long friendId) {
         log.info("Получен запрос на добавление друга id={} пользователю id={}", friendId, userId);
