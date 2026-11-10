@@ -257,9 +257,8 @@ public class FilmDbStorage implements FilmStorage {
 
         addFilmGenres(id, film.getGenres());
         addFilmDirectors(id, film.getDirectors());
-        film.setId(id);
 
-        return film;
+        return findById(id).orElseThrow(() -> new NotFoundException("Не удалось найти фильм с id=" + id));
     }
 
     @Override

@@ -54,9 +54,9 @@ public class FilmService {
                         Продолжительность фильма {}""",
                 film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
 
-        filmStorage.create(film);
-        log.info("Фильм создан: id={}, название='{}'", film.getId(), film.getName());
-        return film;
+        Film newFilm = filmStorage.create(film);
+        log.info("Фильм создан: id={}, название='{}'", newFilm.getId(), newFilm.getName());
+        return newFilm;
     }
 
     public Film update(Film filmUpdate) {
