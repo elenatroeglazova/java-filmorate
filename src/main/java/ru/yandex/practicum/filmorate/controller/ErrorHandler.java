@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
@@ -30,6 +31,14 @@ public class ErrorHandler {
     public ErrorResponse handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         return ErrorResponse.builder()
                 .error(ex.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ErrorResponse.builder()
+                .error("Параметр " + ex.getName() + " имеет неверный формат")
                 .build();
     }
 

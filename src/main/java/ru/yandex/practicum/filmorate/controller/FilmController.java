@@ -7,13 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -24,9 +24,10 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping("/{filmId}")
-    public Optional<Film> film(@PathVariable
+    public Film film(@PathVariable
                                @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
-        return filmService.getById(filmId);
+        return filmService.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
 
     @GetMapping
@@ -58,6 +59,12 @@ public class FilmController {
     @PutMapping
     public Film update(@Validated(UpdateSequence.class) @RequestBody Film filmUpdate) {
         return filmService.update(filmUpdate);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void delete(@PathVariable
+                       @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
+        filmService.delete(filmId);
     }
 
     @PutMapping("/{id}/like/{userId}")
