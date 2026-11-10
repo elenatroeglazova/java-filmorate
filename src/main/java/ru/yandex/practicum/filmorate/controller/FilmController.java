@@ -1,19 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import java.util.List;
-
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
-import java.util.Optional;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,9 +23,10 @@ public class FilmController {
     private final FilmService filmService;
 
     @GetMapping("/{filmId}")
-    public Optional<Film> film(@PathVariable
-                               @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
-        return filmService.getById(filmId);
+    public Film film(@PathVariable
+                     @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
+        return filmService.getById(filmId)
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
 
     @GetMapping
@@ -50,6 +50,14 @@ public class FilmController {
         return filmService.getByDirectorId(directorId, sortBy);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> common(@RequestParam
+                                   @Positive(message = "id пользователя должен быть положительным числом") long userId,
+                                   @RequestParam
+                                   @Positive(message = "id друга должен быть положительным числом") long friendId) {
+        return filmService.common(userId, friendId);
+    }
+
     @PostMapping
     public Film create(@Validated(CreateSequence.class) @RequestBody Film film) {
         return filmService.create(film);
@@ -58,6 +66,12 @@ public class FilmController {
     @PutMapping
     public Film update(@Validated(UpdateSequence.class) @RequestBody Film filmUpdate) {
         return filmService.update(filmUpdate);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void delete(@PathVariable
+                       @Positive(message = "id фильма должен быть положительным числом") Long filmId) {
+        filmService.delete(filmId);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -69,10 +83,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable
-                           @Positive(message = "id фильма должен быть положительным числом") Long id,
-                           @PathVariable
-                           @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
+    public void removeLike(@PathVariable Long id,
+                           @PathVariable Long userId) {
         filmService.removeLike(id, userId);
     }
 

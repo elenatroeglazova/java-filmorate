@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -51,6 +53,38 @@ public class FilmDbStorage implements FilmStorage {
                 FROM likes ls
                 GROUP BY ls.film_id
             ) l ON l.film_id = f.id
+            """;
+
+    private static final String FIND_BY_IDS_SQL = """
+            SELECT f.*,
+                   g.genres          AS genres,
+                   d.directors       AS directors,
+                   l.liked_user_ids  AS liked_user_ids,
+                   r.id              AS rating_id,
+                   r.name            AS rating_name
+            FROM films f
+            JOIN ratings r ON r.id = f.rating_id
+            LEFT JOIN (
+                SELECT fg.film_id,
+                       array_agg(DISTINCT gen.id || ':' || COALESCE(gen.name, '')) AS genres
+                FROM film_genre fg
+                JOIN genres gen ON gen.id = fg.genre_id
+                GROUP BY fg.film_id
+            ) g ON g.film_id = f.id
+            LEFT JOIN (
+                SELECT fd.film_id,
+                       array_agg(DISTINCT d.id || ':' || COALESCE(d.name, '')) AS directors
+                FROM film_director fd
+                JOIN directors d ON d.id = fd.director_id
+                GROUP BY fd.film_id
+            ) d ON d.film_id = f.id
+            LEFT JOIN (
+                SELECT ls.film_id,
+                       array_agg(DISTINCT ls.user_id) AS liked_user_ids
+                FROM likes ls
+                GROUP BY ls.film_id
+            ) l ON l.film_id = f.id
+            WHERE f.id IN (:filmIds)
             """;
 
     private static final String FIND_BY_ID_SQL = """
@@ -128,7 +162,7 @@ public class FilmDbStorage implements FilmStorage {
             SET title        = :name,
                 description  = :description,
                 release_date = :releaseDate,
-                duration     = :duration,
+                duration     = :durationInMinutes,
                 rating_id    = :mpa.id
             WHERE id = :id
             """;
@@ -192,6 +226,12 @@ public class FilmDbStorage implements FilmStorage {
             LIMIT :count
             """;
 
+    private static final String COMMON_FILM_IDS_SQL = """
+            SELECT film_id FROM likes WHERE user_id = :userId
+            INTERSECT
+            SELECT film_id FROM likes WHERE user_id = :friendId
+            """;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmResultSetExtractor extractor;
     private final DataSource dataSource;
@@ -217,13 +257,12 @@ public class FilmDbStorage implements FilmStorage {
 
         addFilmGenres(id, film.getGenres());
         addFilmDirectors(id, film.getDirectors());
-        film.setId(id);
 
-        return film;
+        return findById(id).orElseThrow(() -> new NotFoundException("Не удалось найти фильм с id=" + id));
     }
 
     @Override
-    public void update(Film filmUpdate) {
+    public Film update(Film filmUpdate) {
         SqlParameterSource params = new BeanPropertySqlParameterSource(filmUpdate);
         int updated = namedParameterJdbcTemplate.update(UPDATE_FILM_SQL, params);
 
@@ -233,6 +272,9 @@ public class FilmDbStorage implements FilmStorage {
 
         updateGenres(filmUpdate);
         updateDirectors(filmUpdate);
+
+        return findById(filmUpdate.getId()).orElseThrow(() ->
+                new NotFoundException("Не удалось найти фильм с id=" + filmUpdate.getId()));
     }
 
     @Override
@@ -248,10 +290,24 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> findByIds(Collection<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return List.of();
+        }
+
+        return namedParameterJdbcTemplate.query(
+                FIND_BY_IDS_SQL,
+                new MapSqlParameterSource("filmIds", filmIds),
+                extractor);
+    }
+
+    @Override
     public Optional<Film> findById(Long id) {
         MapSqlParameterSource params = new MapSqlParameterSource("id", id);
         List<Film> films = namedParameterJdbcTemplate.query(FIND_BY_ID_SQL, params, extractor);
-        return films.stream().findFirst().map(this::normalize);
+        return Optional.ofNullable(films)
+                .filter(list -> !list.isEmpty())
+                .map(List::getFirst);
     }
 
     @Override
@@ -262,7 +318,7 @@ public class FilmDbStorage implements FilmStorage {
                 sql,
                 new MapSqlParameterSource("directorId", directorId),
                 extractor
-        ).stream().map(this::normalize).toList();
+        );
     }
 
     @Override
@@ -303,18 +359,17 @@ public class FilmDbStorage implements FilmStorage {
             return cmp != 0 ? cmp : Long.compare(a.getId(), b.getId());
         });
 
-        return all.stream().limit(count).map(this::normalize).toList();
+        return all.stream().limit(count).toList();
     }
 
     @Override
     public void clear() {
-    }
-
-    private Film normalize(Film film) {
-        if (film.getLikes() == null) film.setLikes(new HashSet<>());
-        if (film.getDirectors() == null) film.setDirectors(new HashSet<>());
-        if (film.getGenres() == null) film.setGenres(new HashSet<>());
-        return film;
+        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
+        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbc.execute("TRUNCATE TABLE film_genre RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
+        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 
     private void updateGenres(Film film) {
@@ -406,5 +461,15 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return result;
+    }
+
+    @Override
+    public List<Long> common(Long userId, Long friendId) {
+        return namedParameterJdbcTemplate.queryForList(
+                COMMON_FILM_IDS_SQL,
+                new MapSqlParameterSource()
+                        .addValue("userId", userId)
+                        .addValue("friendId", friendId),
+                Long.class);
     }
 }

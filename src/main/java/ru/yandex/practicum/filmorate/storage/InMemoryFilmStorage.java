@@ -4,14 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -21,6 +14,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         return new ArrayList<>(films.values());
+    }
+
+    @Override
+    public Collection<Film> findByIds(Collection<Long> filmIds) {
+        return List.of();
     }
 
     @Override
@@ -39,7 +37,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void update(Film film) {
+    public Film update(Film film) {
         if (!films.containsKey(film.getId())) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
@@ -48,6 +46,8 @@ public class InMemoryFilmStorage implements FilmStorage {
             film.setLikes(existing.getLikes());
         }
         films.put(film.getId(), film);
+
+        return film;
     }
 
     @Override
@@ -110,5 +110,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public java.util.List<Film> search(String query, String by) {
         return java.util.Collections.emptyList();
+    }
+
+    @Override
+    public List<Long> common(Long userId, Long friendId) {
+        return List.of();
     }
 }

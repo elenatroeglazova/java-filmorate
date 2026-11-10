@@ -5,13 +5,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
 import ru.yandex.practicum.filmorate.validation_groups.UpdateSequence;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -20,11 +23,19 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final EventService eventService;
+
+    @GetMapping("/{id}/feed")
+    public Collection<Event> feed(@PathVariable
+                                  @Positive(message = "id пользователя должен быть положительным числом") Long id) {
+        return eventService.getFeed(id);
+    }
 
     @GetMapping("/{id}")
-    public Optional<User> user(@PathVariable
+    public User user(@PathVariable
                                @Positive(message = "id пользователя должен быть положительным числом") Long id) {
-        return userService.getById(id);
+        return userService.getById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
     @GetMapping
@@ -40,10 +51,19 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> mutualFriends(@PathVariable
-                                          @Positive(message = "id пользователя должен быть положительным числом") Long id,
+                                          @Positive(message = "id пользователя должен быть положительным числом")
+                                          Long id,
                                           @PathVariable
-                                          @Positive(message = "id пользователя должен быть положительным числом") Long otherId) {
+                                          @Positive(message = "id пользователя должен быть положительным числом")
+                                          Long otherId) {
         return userService.mutualFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> recommendations(@PathVariable
+                                            @Positive(message = "id пользователя должен быть положительным числом")
+                                            Long id) {
+        return userService.recommend(id);
     }
 
     @PostMapping
@@ -56,11 +76,15 @@ public class UserController {
         return userService.update(userUpdate);
     }
 
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable
+                       @Positive(message = "id пользователя должен быть положительным числом") Long userId) {
+        userService.delete(userId);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable
-                          @Positive(message = "id пользователя должен быть положительным числом") Long id,
-                          @PathVariable
-                          @Positive(message = "id друга должен быть положительным числом") Long friendId) {
+    public void addFriend(@PathVariable Long id,
+                          @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
     }
 
