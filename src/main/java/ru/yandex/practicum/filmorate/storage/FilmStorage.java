@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import java.util.List;
-
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -32,4 +31,6 @@ public interface FilmStorage {
     void clear();
 
     List<Film> search(String query, String by);
+
+    List<Long> common(Long userId, Long friendId);
 }
