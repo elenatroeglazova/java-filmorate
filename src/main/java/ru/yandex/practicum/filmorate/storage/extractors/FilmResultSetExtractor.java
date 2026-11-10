@@ -29,7 +29,7 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
         List<Film> films = new ArrayList<>();
 
         while (rs.next()) {
-            Set<Genre> genres = new HashSet<>();
+            Set<Genre> genres = new java.util.TreeSet<>(java.util.Comparator.comparing(Genre::getId));
             Object[] genreArray = getArrayFromColumn(rs, "genres");
             if (!isEmpty(genreArray)) {
                 for (Object obj : genreArray) {
