@@ -1,9 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.List;
-
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
 import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -179,5 +177,13 @@ public class FilmService {
             }
         }
         return filmStorage.search(query, by);
+    }
+
+    public Collection<Film> common(Long userId, Long friendId) {
+        log.info("Получен запрос на поиск общего списка фильмов для пользователя с id={} и друга с id={}",
+                userId, friendId);
+        List<Long> ids = filmStorage.common(userId, friendId);
+
+        return filmStorage.findByIds(ids);
     }
 }

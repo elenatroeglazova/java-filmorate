@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
 import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -128,6 +128,7 @@ public class UserService {
     }
 
     public Collection<Film> recommend(long userId) {
+        log.info("Получен запрос рекомендаций для пользователя с id={}", userId);
         final Map<Long, List<Long>> data = userStorage.likesByUsers();
         final List<Long> ref = data.get(userId);
 
@@ -187,7 +188,7 @@ public class UserService {
                 .toList();
     }
 
-    private void checkUser(Long id, String errMessage) {
+    public void checkUser(Long id, String errMessage) {
         userStorage.findById(id).ifPresentOrElse(
                 u -> log.debug("Пользователь {} найден по id={}", u, id),
                 () -> {

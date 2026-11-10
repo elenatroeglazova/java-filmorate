@@ -225,6 +225,12 @@ public class FilmDbStorage implements FilmStorage {
             LIMIT :count
             """;
 
+    private static final String COMMON_FILM_IDS_SQL = """
+            SELECT film_id FROM likes WHERE user_id = :userId
+            INTERSECT
+            SELECT film_id FROM likes WHERE user_id = :friendId
+            """;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmResultSetExtractor extractor;
     private final DataSource dataSource;
@@ -457,5 +463,15 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return result;
+    }
+
+    @Override
+    public List<Long> common(Long userId, Long friendId) {
+        return namedParameterJdbcTemplate.queryForList(
+                COMMON_FILM_IDS_SQL,
+                new MapSqlParameterSource()
+                        .addValue("userId", userId)
+                        .addValue("friendId", friendId),
+                Long.class);
     }
 }

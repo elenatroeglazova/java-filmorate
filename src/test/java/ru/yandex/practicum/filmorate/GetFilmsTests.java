@@ -36,15 +36,9 @@ public class GetFilmsTests extends FilmsBaseTest {
 
         String body = resp.body().trim();
         Set<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
-        Film expected = Film.builder()
-                .id(baseFilm.getId())
-                .name(baseFilm.getName())
-                .description(baseFilm.getDescription())
-                .releaseDate(baseFilm.getReleaseDate())
-                .duration(baseFilm.getDuration())
-                .mpa(Rating.builder().id(rating.getId()).name(NC_17).build())
-                .genres(new HashSet<>())
-                .build();
+        Film expected = baseFilm
+                .setMpa(Rating.builder().id(rating.getId()).name(NC_17).build())
+                .setGenres(new HashSet<>());
 
         assertThat(films)
                 .as("Список фильмов")
