@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.base.FilmsBaseTest;
 import ru.yandex.practicum.filmorate.enums.RatingMPA;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.io.IOException;
