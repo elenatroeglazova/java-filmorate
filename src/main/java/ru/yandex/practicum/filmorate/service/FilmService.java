@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Getter
 @RequiredArgsConstructor
 public class FilmService {
+    private final DirectorStorage directorStorage;
     private final FilmStorage filmStorage;
     private final UserService userService;
 
@@ -151,6 +153,8 @@ public class FilmService {
         if (!"year".equalsIgnoreCase(sortBy) && !"likes".equalsIgnoreCase(sortBy)) {
             throw new ValidationException("Параметр sortBy должен быть 'year' или 'likes'");
         }
+        directorStorage.findById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссёр с id=" + directorId + " не найден"));
         return filmStorage.findByDirectorId(directorId, sortBy);
     }
 
