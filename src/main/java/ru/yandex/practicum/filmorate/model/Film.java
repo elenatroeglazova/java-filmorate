@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.filmorate.jackson.deserializers.DurationDeserializer;
 import ru.yandex.practicum.filmorate.validation_groups.*;
@@ -19,6 +20,7 @@ import java.util.Set;
  */
 @Data
 @Builder
+@Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @NotEmptyObject(groups = NotEmptyBody.class)
@@ -39,7 +41,7 @@ public class Film {
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
 
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new java.util.TreeSet<>(java.util.Comparator.comparing(Genre::getId));
 
     @NotNull(groups = CommonChecks.class, message = "Фильм должен иметь рейтинг MPAA")
     private Rating mpa;
@@ -52,10 +54,7 @@ public class Film {
     @Positive(groups = CommonChecks.class, message = "Продолжительность фильма не может быть отрицательным числом")
     @JsonGetter("duration")
     public Long getDurationInMinutes() {
-        if (duration == null) {
-            return null;
-        }
-        return duration.toMinutes();
+        return duration != null ? duration.toMinutes() : null;
     }
 
     @JsonIgnore

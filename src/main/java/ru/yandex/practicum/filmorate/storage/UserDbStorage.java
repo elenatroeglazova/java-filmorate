@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -9,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.extractors.LikedFilmIdsByUserExtractor;
 import ru.yandex.practicum.filmorate.storage.extractors.UserResultSetExtractor;
 
 import javax.sql.DataSource;
@@ -104,9 +106,17 @@ public class UserDbStorage implements UserStorage {
             ) f ON f.user_id = u.id
             """;
 
+    private static final String FIND_LIKED_FILMS_BY_USERS_SQL = """
+            SELECT l.user_id,
+                   array_agg(DISTINCT l.film_id) AS film_ids
+            FROM likes l
+            GROUP BY l.user_id
+            """;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final UserResultSetExtractor extractor;
+    private final UserResultSetExtractor userResultSetExtractor;
     private final DataSource dataSource;
+    private final LikedFilmIdsByUserExtractor likedFilmIdsByUserExtractor;
 
     @Override
     public User create(User user) {
@@ -150,7 +160,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        return namedParameterJdbcTemplate.query(FIND_ALL_SQL, extractor);
+        return namedParameterJdbcTemplate.query(FIND_ALL_SQL, userResultSetExtractor);
     }
 
     @Override
@@ -158,7 +168,7 @@ public class UserDbStorage implements UserStorage {
         List<User> users = namedParameterJdbcTemplate.query(
                 FIND_BY_ID_SQL,
                 new MapSqlParameterSource("id", id),
-                extractor);
+                userResultSetExtractor);
 
         return Optional.ofNullable(users)
                 .filter(list -> !list.isEmpty())
@@ -170,7 +180,7 @@ public class UserDbStorage implements UserStorage {
         return namedParameterJdbcTemplate.query(
                 FIND_FRIENDS_SQL,
                 new MapSqlParameterSource("userId", id),
-                extractor);
+                userResultSetExtractor);
     }
 
     @Override
@@ -199,11 +209,23 @@ public class UserDbStorage implements UserStorage {
                 new MapSqlParameterSource()
                         .addValue("userId", userId)
                         .addValue("otherId", otherId),
-                extractor);
+                userResultSetExtractor);
+    }
+
+    @Override
+    public Map<Long, List<Long>> likesByUsers() {
+        return namedParameterJdbcTemplate.query(
+                FIND_LIKED_FILMS_BY_USERS_SQL,
+                likedFilmIdsByUserExtractor);
     }
 
     @Override
     public void clear() {
-
+        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
+        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbc.execute("TRUNCATE TABLE friends RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE users RESTART IDENTITY");
+        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 }

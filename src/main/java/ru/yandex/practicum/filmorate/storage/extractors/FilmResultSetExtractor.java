@@ -29,7 +29,7 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
         List<Film> films = new ArrayList<>();
 
         while (rs.next()) {
-            Set<Genre> genres = new HashSet<>();
+            Set<Genre> genres = new java.util.TreeSet<>(java.util.Comparator.comparing(Genre::getId));
             Object[] genreArray = getArrayFromColumn(rs, "genres");
             if (!isEmpty(genreArray)) {
                 for (Object obj : genreArray) {
@@ -41,10 +41,9 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                 }
             }
 
-            Set<Director> directors = null;
+            Set<Director> directors = new HashSet<>();
             Object[] directorArray = getArrayFromColumn(rs, "directors");
             if (!isEmpty(directorArray)) {
-                directors = new HashSet<>();
                 for (Object obj : directorArray) {
                     if (obj == null) continue;
                     Director director = parseDirector(obj.toString());
@@ -54,10 +53,9 @@ public class FilmResultSetExtractor implements ResultSetExtractor<List<Film>> {
                 }
             }
 
-            Set<Long> likedUserIds = null;
+            Set<Long> likedUserIds = new HashSet<>();
             Object[] likeArray = getArrayFromColumn(rs, "liked_user_ids");
             if (likeArray != null) {
-                likedUserIds = new HashSet<>();
                 for (Object obj : likeArray) {
                     if (obj != null) {
                         likedUserIds.add(((Number) obj).longValue());
