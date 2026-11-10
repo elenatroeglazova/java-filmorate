@@ -41,7 +41,7 @@ public class Film {
     @JsonDeserialize(using = DurationDeserializer.class)
     private Duration duration;
 
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new java.util.LinkedHashSet<>();
 
     @NotNull(groups = CommonChecks.class, message = "Фильм должен иметь рейтинг MPAA")
     private Rating mpa;
