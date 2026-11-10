@@ -161,7 +161,7 @@ public class FilmDbStorage implements FilmStorage {
             SET title        = :name,
                 description  = :description,
                 release_date = :releaseDate,
-                duration     = :duration,
+                duration     = :durationInMinutes,
                 rating_id    = :mpa.id
             WHERE id = :id
             """;

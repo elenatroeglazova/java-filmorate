@@ -54,10 +54,7 @@ public class Film {
     @Positive(groups = CommonChecks.class, message = "Продолжительность фильма не может быть отрицательным числом")
     @JsonGetter("duration")
     public Long getDurationInMinutes() {
-        if (duration == null) {
-            return null;
-        }
-        return duration.toMinutes();
+        return duration != null ? duration.toMinutes() : null;
     }
 
     @JsonIgnore
