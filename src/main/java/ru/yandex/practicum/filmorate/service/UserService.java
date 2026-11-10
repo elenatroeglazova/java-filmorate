@@ -4,13 +4,19 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -19,7 +25,9 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final EventService eventService;
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     public Collection<User> users() {
         log.info("Получен запрос на получение всех пользователей");
@@ -72,15 +80,29 @@ public class UserService {
         return userUpdate;
     }
 
+    public void delete(Long id) {
+        log.info("Получен запрос на удаление пользователя с id={}", id);
+        if (!userStorage.delete(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        log.info("Пользователь с id={} удален", id);
+    }
+
+    @Transactional
     public void addFriend(Long userId, Long friendId) {
         log.info("Получен запрос на добавление друга id={} пользователю id={}", friendId, userId);
         checkUser(friendId, "Попытка добавить несуществующего пользователя с id={} в друзья");
         checkUser(userId, "Попытка добавить друга несуществующему пользователю с id={}");
 
+        if (userStorage.findById(userId).orElseThrow().getFriends().containsKey(friendId)) {
+            return;
+        }
         userStorage.addFriend(userId, friendId);
+        eventService.record(userId, EventType.FRIEND, EventOperation.ADD, friendId);
         log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
+    @Transactional
     public void removeFriend(Long userId, Long friendId) {
         log.info("Получен запрос на удаление друга id={} из списка друзей пользователя id={}", friendId, userId);
         checkUser(friendId, "Попытка удаления из друзей несуществующего пользователя id={}");
@@ -89,6 +111,7 @@ public class UserService {
         boolean isRemoved = userStorage.removeFriend(userId, friendId);
 
         if (isRemoved) {
+            eventService.record(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
             log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
         }
     }
@@ -112,7 +135,68 @@ public class UserService {
         return userStorage.mutualFriends(userId, otherId);
     }
 
-    private void checkUser(Long id, String errMessage) {
+    public Collection<Film> recommend(long userId) {
+        log.info("Получен запрос рекомендаций для пользователя с id={}", userId);
+        final Map<Long, List<Long>> data = userStorage.likesByUsers();
+        final List<Long> ref = data.get(userId);
+
+        log.debug("Полученный список лайков пользователей: {}", data);
+        if (ref == null) {
+            log.info("Не найдены лайки пользователя с id={}", userId);
+            return Collections.emptyList();
+        }
+
+        final Set<Long> refSet = new HashSet<>(ref);
+        final Map<Long, Long> freq = new HashMap<>();
+
+        for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
+            if (entry.getKey().equals(userId)) {
+                continue;
+            }
+            List<Long> likes = entry.getValue();
+            if (likes == null) {
+                continue;
+            }
+            long count = likes.stream()
+                    .distinct()
+                    .filter(refSet::contains)
+                    .count();
+            freq.put(entry.getKey(), count);
+        }
+
+        long maxCount = freq.values().stream()
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0L);
+
+        log.debug("Список совпавших лайков, сгруппированных по пользователям: {}", freq);
+        if (maxCount == 0L) {
+            log.info("Не найделно ни одного совпадаения по понравившимся фильмам");
+            return Collections.emptyList();
+        }
+
+        List<Long> recommendedIds =  freq.entrySet().stream()
+                .filter(e -> e.getValue() == maxCount)
+                .flatMap(e -> {
+                    List<Long> likes = data.get(e.getKey());
+                    return likes == null ? Stream.empty() : likes.stream();
+                })
+                .filter(filmId -> !refSet.contains(filmId))
+                .distinct()
+                .toList();
+
+        if (ObjectUtils.isEmpty(recommendedIds)) {
+            log.info("Не найдена ни одна рекомендация для пользователя с id={}", userId);
+            return Collections.emptyList();
+        }
+
+        log.info("Найдены рекомендации для пользователя с id={}: {}", userId, recommendedIds);
+        return filmStorage.findByIds(recommendedIds).stream()
+                .sorted(Comparator.comparing(Film::getId).reversed())
+                .toList();
+    }
+
+    public void checkUser(Long id, String errMessage) {
         userStorage.findById(id).ifPresentOrElse(
                 u -> log.debug("Пользователь {} найден по id={}", u, id),
                 () -> {

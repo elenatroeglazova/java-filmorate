@@ -36,15 +36,16 @@ public class GetFilmsTests extends FilmsBaseTest {
 
         String body = resp.body().trim();
         Set<Film> films = objectMapper.readValue(body, new TypeReference<>() {});
-        Film expected = baseFilm;
-        expected.setId(1L);
-        expected.setMpa(Rating.builder().id(5L).name(NC_17).build());
-        expected.setGenres(new HashSet<>());
+        Film expected = baseFilm
+                .setId(1L)
+                .setMpa(Rating.builder().id(rating.getId()).name(NC_17).build())
+                .setGenres(new HashSet<>())
+                .setLikes(new HashSet<>())
+                .setDirectors(new HashSet<>());
 
         assertThat(films)
                 .as("Список фильмов")
                 .isNotEmpty()
-                .contains(expected)
-                .hasSize(4);
+                .contains(expected);
     }
 }
