@@ -109,10 +109,9 @@ public class FilmService {
         filmStorage.findById(filmId).ifPresentOrElse(
                 f -> {
                     log.debug("Фильм {} по id={}", f, filmId);
-                    if (f.getLikes().contains(userId)) {
-                        return;
+                    if (!f.getLikes().contains(userId)) {
+                        filmStorage.addLike(filmId, userId);
                     }
-                    filmStorage.addLike(filmId, userId);
                     eventService.record(userId, EventType.LIKE, EventOperation.ADD, filmId);
                     log.info("Поставлен лайк фильму id={} от пользователя id={}", filmId, userId);
                 },

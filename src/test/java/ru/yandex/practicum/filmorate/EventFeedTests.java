@@ -82,31 +82,34 @@ class EventFeedTests {
     }
 
     @Test
-    void friendshipAndLikesProduceEventsOnlyForChanges() throws Exception {
+    void repeatedLikeRequestsProduceEventsWithoutDuplicateLikes() throws Exception {
         long before = System.currentTimeMillis();
         for (int i = 0; i < 2; i++) {
             mvc.perform(put("/users/{id}/friends/{friend}", userId, friendId)).andExpect(status().isOk());
             mvc.perform(put("/films/{id}/like/{user}", filmId, userId)).andExpect(status().isOk());
         }
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM likes WHERE film_id = ? AND user_id = ?",
+                Integer.class, filmId, userId)).isEqualTo(1);
         for (int i = 0; i < 2; i++) {
             mvc.perform(delete("/users/{id}/friends/{friend}", userId, friendId)).andExpect(status().isOk());
             mvc.perform(delete("/films/{id}/like/{user}", filmId, userId)).andExpect(status().isOk());
         }
         List<Event> feed = List.copyOf(events.findByUserId(userId));
-        assertThat(feed).hasSize(4);
+        assertThat(feed).hasSize(5);
         assertThat(feed).extracting(Event::getUserId).containsOnly(userId);
         assertThat(feed).extracting(Event::getEventType)
-                .containsExactly(EventType.FRIEND, EventType.LIKE, EventType.FRIEND, EventType.LIKE);
+                .containsExactly(EventType.FRIEND, EventType.LIKE, EventType.LIKE, EventType.FRIEND, EventType.LIKE);
         assertThat(feed).extracting(Event::getOperation)
-                .containsExactly(EventOperation.ADD, EventOperation.ADD, EventOperation.REMOVE, EventOperation.REMOVE);
-        assertThat(feed).extracting(Event::getEntityId).containsExactly(friendId, filmId, friendId, filmId);
+                .containsExactly(EventOperation.ADD, EventOperation.ADD, EventOperation.ADD,
+                        EventOperation.REMOVE, EventOperation.REMOVE);
+        assertThat(feed).extracting(Event::getEntityId).containsExactly(friendId, filmId, filmId, friendId, filmId);
         assertThat(feed).allSatisfy(event -> {
             assertThat(event.getTimestamp()).isBetween(before, System.currentTimeMillis());
             assertThat(event.getEventId()).isPositive();
         });
         assertThat(events.findByUserId(friendId)).isEmpty();
         mvc.perform(get("/users/{id}/feed", userId)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$.length()").value(5))
                 .andExpect(jsonPath("$[0].userId").value(userId))
                 .andExpect(jsonPath("$[0].eventType").value("FRIEND"))
                 .andExpect(jsonPath("$[0].operation").value("ADD"))
