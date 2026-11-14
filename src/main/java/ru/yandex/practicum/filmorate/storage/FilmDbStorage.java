@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -311,8 +312,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findByDirectorId(Long directorId, String sortBy) {
-        String orderBy = "year".equalsIgnoreCase(sortBy) ? "f.release_date" : "likes_count DESC, f.id";
+    public Collection<Film> findByDirectorId(Long directorId, SortBy sortBy) {
+        String orderBy = sortBy == SortBy.YEAR ? "f.release_date" : "likes_count DESC, f.id";
         String sql = FIND_BY_DIRECTOR_SQL + " ORDER BY " + orderBy;
         return namedParameterJdbcTemplate.query(
                 sql,

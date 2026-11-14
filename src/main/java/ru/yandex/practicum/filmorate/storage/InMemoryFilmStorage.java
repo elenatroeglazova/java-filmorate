@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -87,14 +88,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findByDirectorId(Long directorId, String sortBy) {
+    public Collection<Film> findByDirectorId(Long directorId, SortBy sortBy) {
         List<Film> result = new ArrayList<>();
         for (Film film : films.values()) {
             if (film.getDirectors() != null && film.getDirectors().stream().anyMatch(d -> d.getId().equals(directorId))) {
                 result.add(film);
             }
         }
-        if ("year".equalsIgnoreCase(sortBy)) {
+        if (sortBy == SortBy.YEAR) {
             result.sort(Comparator.comparing(Film::getReleaseDate));
         } else {
             result.sort(Comparator.comparingInt((Film f) -> f.getLikes() == null ? 0 : f.getLikes().size()).reversed());
