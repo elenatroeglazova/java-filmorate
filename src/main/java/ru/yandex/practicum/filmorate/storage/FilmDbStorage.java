@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.extractors.FilmResultSetExtractor;
 
 import javax.sql.DataSource;
 import java.util.*;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -341,26 +342,22 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> mostPopular(int count, Long genreId, Integer year) {
-        List<Film> all = new java.util.ArrayList<>(findAll());
-
+        String sql = MOST_POPULAR_FILMS_SQL;
+        Map<String, Object> params = new HashMap<>();
+        params.put("count", count);
+        StringBuilder conditions = new StringBuilder();
         if (genreId != null) {
-            all.removeIf(f -> f.getGenres() == null
-                    || f.getGenres().stream().noneMatch(g -> g.getId().equals(genreId)));
+            conditions.append(" AND f.id IN (SELECT film_id FROM film_genre WHERE genre_id = :genreId) ");
+            params.put("genreId", genreId);
         }
-
         if (year != null) {
-            all.removeIf(f -> f.getReleaseDate() == null
-                    || f.getReleaseDate().getYear() != year);
+            conditions.append(" AND YEAR(f.release_date) = :year ");
+            params.put("year", year);
         }
-
-        all.sort((a, b) -> {
-            int likesA = a.getLikes() == null ? 0 : a.getLikes().size();
-            int likesB = b.getLikes() == null ? 0 : b.getLikes().size();
-            int cmp = Integer.compare(likesB, likesA);
-            return cmp != 0 ? cmp : Long.compare(a.getId(), b.getId());
-        });
-
-        return all.stream().limit(count).toList();
+        if (conditions.length() > 0) {
+            sql = sql.replace("ORDER BY", "WHERE 1=1" + conditions + " ORDER BY");
+        }
+        return namedParameterJdbcTemplate.query(sql, params, extractor);
     }
 
     @Override
@@ -415,53 +412,29 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> search(String query, String by) {
-        List<Film> allFilms = new java.util.ArrayList<>(findAll());
-        String lowerQuery = query.toLowerCase();
-        List<Film> result = new java.util.ArrayList<>();
-
-        for (Film film : allFilms) {
-            boolean matches = false;
-
-            if (by.contains("title") && film.getName() != null
-                    && film.getName().toLowerCase().contains(lowerQuery)) {
-                matches = true;
-            }
-
-            if (!matches && by.contains("director") && film.getDirectors() != null) {
-                for (Director director : film.getDirectors()) {
-                    if (director.getName() != null
-                            && director.getName().toLowerCase().contains(lowerQuery)) {
-                        matches = true;
-                        break;
-                    }
-                }
-            }
-
-            if (matches) {
-                result.add(film);
-            }
+        String searchPattern = "%" + query.toLowerCase() + "%";
+        String sql = MOST_POPULAR_FILMS_SQL.replace("LIMIT :count", "");
+        StringBuilder where = new StringBuilder("WHERE f.id IN (SELECT f2.id FROM films f2 ");
+        List<String> conds = new ArrayList<>();
+        if (by.contains("director")) {
+            where.append("LEFT JOIN film_director fd2 ON f2.id = fd2.film_id ");
+            where.append("LEFT JOIN directors d2 ON d2.id = fd2.director_id ");
         }
-
-        result.sort((a, b) -> {
-            int likesA = a.getLikes() == null ? 0 : a.getLikes().size();
-            int likesB = b.getLikes() == null ? 0 : b.getLikes().size();
-            int cmp = Integer.compare(likesB, likesA);
-            if (cmp != 0) {
-                return cmp;
-            }
-            return Long.compare(a.getId(), b.getId());
-        });
-
-        for (Film f : result) {
-            if (f.getLikes() == null) {
-                f.setLikes(new java.util.HashSet<>());
-            }
-            if (f.getDirectors() == null) {
-                f.setDirectors(new java.util.HashSet<>());
-            }
+        where.append("WHERE ");
+        if (by.contains("title")) {
+            conds.add("LOWER(f2.title) LIKE :query");
         }
-
-        return result;
+        if (by.contains("director")) {
+            conds.add("LOWER(d2.name) LIKE :query");
+        }
+        where.append(String.join(" OR ", conds));
+        where.append(") ");
+        sql = sql.replace("ORDER BY", where + "ORDER BY");
+        Map<String, Object> params = new HashMap<>();
+        params.put("query", searchPattern);
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, extractor);
+        films.forEach(this::normalize);
+        return films;
     }
 
     @Override
@@ -472,5 +445,18 @@ public class FilmDbStorage implements FilmStorage {
                         .addValue("userId", userId)
                         .addValue("friendId", friendId),
                 Long.class);
+    }
+
+    private Film normalize(Film film) {
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
+        if (film.getDirectors() == null) {
+            film.setDirectors(new HashSet<>());
+        }
+        if (film.getGenres() == null) {
+            film.setGenres(new TreeSet<>(Comparator.comparing(Genre::getId)));
+        }
+        return film;
     }
 }
