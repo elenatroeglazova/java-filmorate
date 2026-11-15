@@ -91,9 +91,4 @@ public class InMemoryUserStorage implements UserStorage {
     public Map<Long, List<Long>> likesByUsers() {
         return Map.of();
     }
-
-    @Override
-    public void clear() {
-        users.clear();
-    }
 }

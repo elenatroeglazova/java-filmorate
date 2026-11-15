@@ -2,15 +2,14 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.enums.SortBy;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -18,7 +17,6 @@ import ru.yandex.practicum.filmorate.storage.extractors.FilmResultSetExtractor;
 
 import javax.sql.DataSource;
 import java.util.*;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -360,16 +358,6 @@ public class FilmDbStorage implements FilmStorage {
         return namedParameterJdbcTemplate.query(sql, params, extractor);
     }
 
-    @Override
-    public void clear() {
-        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
-        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
-        jdbc.execute("TRUNCATE TABLE film_genre RESTART IDENTITY");
-        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
-        jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
-        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
-    }
-
     private void updateGenres(Film film) {
         Long filmId = film.getId();
         namedParameterJdbcTemplate.update(
@@ -432,9 +420,7 @@ public class FilmDbStorage implements FilmStorage {
         sql = sql.replace("ORDER BY", where + "ORDER BY");
         Map<String, Object> params = new HashMap<>();
         params.put("query", searchPattern);
-        List<Film> films = namedParameterJdbcTemplate.query(sql, params, extractor);
-        films.forEach(this::normalize);
-        return films;
+        return namedParameterJdbcTemplate.query(sql, params, extractor);
     }
 
     @Override
@@ -445,18 +431,5 @@ public class FilmDbStorage implements FilmStorage {
                         .addValue("userId", userId)
                         .addValue("friendId", friendId),
                 Long.class);
-    }
-
-    private Film normalize(Film film) {
-        if (film.getLikes() == null) {
-            film.setLikes(new HashSet<>());
-        }
-        if (film.getDirectors() == null) {
-            film.setDirectors(new HashSet<>());
-        }
-        if (film.getGenres() == null) {
-            film.setGenres(new TreeSet<>(Comparator.comparing(Genre::getId)));
-        }
-        return film;
     }
 }

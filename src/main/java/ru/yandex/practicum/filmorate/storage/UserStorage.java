@@ -28,6 +28,4 @@ public interface UserStorage {
     Collection<User> mutualFriends(Long userId, Long otherId);
 
     Map<Long, List<Long>> likesByUsers();
-
-    void clear();
 }

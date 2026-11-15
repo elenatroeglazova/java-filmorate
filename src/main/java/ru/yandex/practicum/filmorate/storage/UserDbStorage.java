@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -217,15 +216,5 @@ public class UserDbStorage implements UserStorage {
         return namedParameterJdbcTemplate.query(
                 FIND_LIKED_FILMS_BY_USERS_SQL,
                 likedFilmIdsByUserExtractor);
-    }
-
-    @Override
-    public void clear() {
-        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
-        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
-        jdbc.execute("TRUNCATE TABLE friends RESTART IDENTITY");
-        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
-        jdbc.execute("TRUNCATE TABLE users RESTART IDENTITY");
-        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 }

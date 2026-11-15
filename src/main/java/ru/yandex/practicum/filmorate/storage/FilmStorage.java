@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.enums.SortBy;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,8 +28,6 @@ public interface FilmStorage {
     boolean removeLike(Long filmId, Long userId);
 
     Collection<Film> mostPopular(int count, Long genreId, Integer year);
-
-    void clear();
 
     List<Film> search(String query, String by);
 
