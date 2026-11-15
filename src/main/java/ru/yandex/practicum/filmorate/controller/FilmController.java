@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validation_groups.CreateSequence;
@@ -45,7 +46,7 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public Collection<Film> getByDirector(
             @PathVariable @Positive(message = "id режиссера должен быть положительным") Long directorId,
-            @RequestParam(defaultValue = "year") String sortBy) {
+            @RequestParam(defaultValue = "YEAR") SortBy sortBy) {
         log.info("Получен запрос на фильмы режиссёра с id={}, сортировка: {}", directorId, sortBy);
         return filmService.getByDirectorId(directorId, sortBy);
     }

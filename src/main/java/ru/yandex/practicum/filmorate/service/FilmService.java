@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -158,10 +158,7 @@ public class FilmService {
         return popular;
     }
 
-    public Collection<Film> getByDirectorId(Long directorId, String sortBy) {
-        if (!"year".equalsIgnoreCase(sortBy) && !"likes".equalsIgnoreCase(sortBy)) {
-            throw new ValidationException("Параметр sortBy должен быть 'year' или 'likes'");
-        }
+    public Collection<Film> getByDirectorId(Long directorId, SortBy sortBy) {
         directorStorage.findById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссёр с id=" + directorId + " не найден"));
         return filmStorage.findByDirectorId(directorId, sortBy);

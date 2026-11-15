@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.enums.SortBy;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
-    Collection<Film> findByDirectorId(Long directorId, String sortBy);
+    Collection<Film> findByDirectorId(Long directorId, SortBy sortBy);
 
 
     Film create(Film film);
