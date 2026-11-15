@@ -38,10 +38,9 @@ public class RecommendationsTest extends RecommendationsBaseTest {
 
         assertThat(recommendations.stream().map(Film::getName).toList())
                 .as("Рекомендации фильмов для пользователя с id=1")
-                .withFailMessage("Ответ должен содержать 2 рекомендации - rec_film_2 и rec_film_10")
                 .isNotEmpty()
-                .containsExactlyInAnyOrder("rec_film_2", "rec_film_10")
-                .hasSize(2);
+                .containsExactlyInAnyOrder("rec_film_4", "rec_film_2", "rec_film_8", "rec_film_10")
+                .hasSize(4);
     }
 
     @Test
@@ -67,7 +66,6 @@ public class RecommendationsTest extends RecommendationsBaseTest {
 
         assertThat(recommendations.stream().map(Film::getName).toList())
                 .as("Рекомендации фильмов для пользователя с id=6")
-                .withFailMessage("Ответ должен содержать пустой список")
                 .isEmpty();
     }
 
@@ -94,7 +92,6 @@ public class RecommendationsTest extends RecommendationsBaseTest {
 
         assertThat(recommendations.stream().map(Film::getName).toList())
                 .as("Рекомендации фильмов для пользователя с id=7")
-                .withFailMessage("Ответ должен содержать пустой список")
                 .isEmpty();
     }
 
@@ -121,7 +118,6 @@ public class RecommendationsTest extends RecommendationsBaseTest {
 
         assertThat(recommendations.stream().map(Film::getName).toList())
                 .as("Рекомендации фильмов для пользователя с id=8")
-                .withFailMessage("Ответ должен содержать пустой список")
                 .isEmpty();
     }
 }

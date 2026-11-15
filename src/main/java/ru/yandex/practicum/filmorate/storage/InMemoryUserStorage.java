@@ -88,7 +88,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Map<Long, List<Long>> likesByUsers() {
-        return Map.of();
+    public List<Long> usersWithSimilarLikes(Long userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Long> findRecommendedFilmIds(Long userId, List<Long> users) {
+        return List.of();
     }
 }

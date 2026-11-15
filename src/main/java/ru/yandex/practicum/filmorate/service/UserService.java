@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -137,53 +136,15 @@ public class UserService {
 
     public Collection<Film> recommend(long userId) {
         log.info("Получен запрос рекомендаций для пользователя с id={}", userId);
-        final Map<Long, List<Long>> data = userStorage.likesByUsers();
-        final List<Long> ref = data.get(userId);
+        final List<Long> usersWithSimilarLikes = userStorage.usersWithSimilarLikes(userId);
 
-        log.debug("Полученный список лайков пользователей: {}", data);
-        if (ref == null) {
-            log.info("Не найдены лайки пользователя с id={}", userId);
+        log.debug("Полученный список пользователей, чьи лайки совпадают с {}: {}", userId, usersWithSimilarLikes);
+        if (isEmpty(usersWithSimilarLikes)) {
+            log.info("Не найдены совпадения лайков пользователя с id={}", userId);
             return Collections.emptyList();
         }
 
-        final Set<Long> refSet = new HashSet<>(ref);
-        final Map<Long, Long> freq = new HashMap<>();
-
-        for (Map.Entry<Long, List<Long>> entry : data.entrySet()) {
-            if (entry.getKey().equals(userId)) {
-                continue;
-            }
-            List<Long> likes = entry.getValue();
-            if (likes == null) {
-                continue;
-            }
-            long count = likes.stream()
-                    .distinct()
-                    .filter(refSet::contains)
-                    .count();
-            freq.put(entry.getKey(), count);
-        }
-
-        long maxCount = freq.values().stream()
-                .mapToLong(Long::longValue)
-                .max()
-                .orElse(0L);
-
-        log.debug("Список совпавших лайков, сгруппированных по пользователям: {}", freq);
-        if (maxCount == 0L) {
-            log.info("Не найделно ни одного совпадаения по понравившимся фильмам");
-            return Collections.emptyList();
-        }
-
-        List<Long> recommendedIds =  freq.entrySet().stream()
-                .filter(e -> e.getValue() == maxCount)
-                .flatMap(e -> {
-                    List<Long> likes = data.get(e.getKey());
-                    return likes == null ? Stream.empty() : likes.stream();
-                })
-                .filter(filmId -> !refSet.contains(filmId))
-                .distinct()
-                .toList();
+        List<Long> recommendedIds = userStorage.findRecommendedFilmIds(userId, usersWithSimilarLikes);
 
         if (ObjectUtils.isEmpty(recommendedIds)) {
             log.info("Не найдена ни одна рекомендация для пользователя с id={}", userId);
@@ -191,8 +152,16 @@ public class UserService {
         }
 
         log.info("Найдены рекомендации для пользователя с id={}: {}", userId, recommendedIds);
-        return filmStorage.findByIds(recommendedIds).stream()
-                .sorted(Comparator.comparing(Film::getId).reversed())
+        Collection<Film> recommendedFilms = filmStorage.findByIds(recommendedIds);
+
+        Map<Long, Film> filmsById = new HashMap<>();
+        for (Film f : recommendedFilms) {
+            filmsById.put(f.getId(), f);
+        }
+
+        return recommendedIds.stream()
+                .map(filmsById::get)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
