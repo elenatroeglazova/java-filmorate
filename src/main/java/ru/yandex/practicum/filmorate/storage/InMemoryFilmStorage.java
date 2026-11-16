@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.enums.SortBy;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -101,11 +101,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             result.sort(Comparator.comparingInt((Film f) -> f.getLikes() == null ? 0 : f.getLikes().size()).reversed());
         }
         return result;
-    }
-
-    @Override
-    public void clear() {
-        films.clear();
     }
 
     @Override

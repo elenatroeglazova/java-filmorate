@@ -7,6 +7,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -46,6 +48,9 @@ public abstract class BaseTest {
 
     @Autowired
     FilmService filmService;
+
+    @Autowired
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     protected static HttpClient client;
     protected Film baseFilm;
@@ -149,8 +154,14 @@ public abstract class BaseTest {
 
     @AfterAll
     public void tearDown() {
-        filmStorage.clear();
-        userStorage.clear();
+        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
+        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbc.execute("TRUNCATE TABLE film_genre RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE friends RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE users RESTART IDENTITY");
+        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 
     private void populateGenresStorage() {
