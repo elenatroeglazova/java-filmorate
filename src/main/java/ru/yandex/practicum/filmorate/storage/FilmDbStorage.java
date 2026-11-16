@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -18,7 +17,6 @@ import ru.yandex.practicum.filmorate.storage.extractors.FilmResultSetExtractor;
 
 import javax.sql.DataSource;
 import java.util.*;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
