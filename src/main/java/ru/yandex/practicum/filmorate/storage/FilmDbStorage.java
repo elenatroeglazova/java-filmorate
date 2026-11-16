@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.enums.SortBy;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -358,16 +358,6 @@ public class FilmDbStorage implements FilmStorage {
             sql = sql.replace("ORDER BY", "WHERE 1=1" + conditions + " ORDER BY");
         }
         return namedParameterJdbcTemplate.query(sql, params, extractor);
-    }
-
-    @Override
-    public void clear() {
-        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
-        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
-        jdbc.execute("TRUNCATE TABLE film_genre RESTART IDENTITY");
-        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
-        jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
-        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 
     private void updateGenres(Film film) {
