@@ -33,16 +33,19 @@ public class ReviewService {
 
     @Transactional
     public Review update(Review review) {
-        getById(review.getReviewId());
+        reviewStorage.findById(review.getReviewId()).orElseThrow(() ->
+                new NotFoundException("Отзыв с id = " + review.getReviewId() + " не найден"));
         reviewStorage.update(review);
-        Review updated = getById(review.getReviewId());
+        Review updated = reviewStorage.findById(review.getReviewId()).orElseThrow(() ->
+                new NotFoundException("Отзыв с id = " + review.getReviewId() + " не найден"));
         eventService.record(updated.getUserId(), EventType.REVIEW, EventOperation.UPDATE, updated.getReviewId());
         return updated;
     }
 
     @Transactional
     public void delete(Long id) {
-        Review review = getById(id);
+        Review review = reviewStorage.findById(id).orElseThrow(() ->
+                new NotFoundException("Отзыв с id = " + id + " не найден"));
         if (!reviewStorage.delete(id)) {
             throw new NotFoundException("Отзыв с id = " + id + " не найден");
         }
@@ -60,14 +63,16 @@ public class ReviewService {
 
     @Transactional
     public void setVote(Long id, Long userId, int vote) {
-        getById(id);
+        reviewStorage.findById(id).orElseThrow(() ->
+                new NotFoundException("Отзыв с id = " + id + " не найден"));
         checkUser(userId);
         reviewStorage.setVote(id, userId, vote);
     }
 
     @Transactional
     public void removeVote(Long id, Long userId) {
-        getById(id);
+        reviewStorage.findById(id).orElseThrow(() ->
+                new NotFoundException("Отзыв с id = " + id + " не найден"));
         checkUser(userId);
         reviewStorage.removeVote(id, userId);
     }
