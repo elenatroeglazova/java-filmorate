@@ -420,7 +420,9 @@ public class FilmDbStorage implements FilmStorage {
         sql = sql.replace("ORDER BY", where + "ORDER BY");
         Map<String, Object> params = new HashMap<>();
         params.put("query", searchPattern);
-        return namedParameterJdbcTemplate.query(sql, params, extractor);
+        List<Film> films = namedParameterJdbcTemplate.query(sql, params, extractor);
+        films.forEach(this::normalize);
+        return films;
     }
 
     @Override
@@ -431,5 +433,18 @@ public class FilmDbStorage implements FilmStorage {
                         .addValue("userId", userId)
                         .addValue("friendId", friendId),
                 Long.class);
+    }
+
+    private Film normalize(Film film) {
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
+        if (film.getDirectors() == null) {
+            film.setDirectors(new HashSet<>());
+        }
+        if (film.getGenres() == null) {
+            film.setGenres(new TreeSet<>(Comparator.comparing(Genre::getId)));
+        }
+        return film;
     }
 }
