@@ -7,6 +7,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -20,7 +23,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +35,7 @@ import static ru.yandex.practicum.filmorate.enums.RatingMPA.*;
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class BaseTest {
     @LocalServerPort
     protected int port;
@@ -46,9 +49,11 @@ public abstract class BaseTest {
     @Autowired
     FilmService filmService;
 
+    @Autowired
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
     protected static HttpClient client;
-    protected static List<User> testUsers = new ArrayList<>();
-    protected static List<Film> testFilms = new ArrayList<>();
+    protected Film baseFilm;
     protected UserStorage userStorage;
     protected FilmStorage filmStorage;
     protected Set<Genre> singleGenre = new HashSet<>();
@@ -66,8 +71,8 @@ public abstract class BaseTest {
         populateMpaPresetStorage();
         singleGenre.add(Genre.builder().id(4L).build());
         fewGenres.addAll(List.of(Genre.builder().id(1L).build(), Genre.builder().id(4L).build()));
-        duplicateGenres.addAll(List.of(Genre.builder().id(1L).build(),
-                Genre.builder().id(4L).build(), Genre.builder().id(4L).build()));
+        duplicateGenres.addAll(List.of(Genre.builder().id(2L).build(),
+                Genre.builder().id(3L).build(), Genre.builder().id(3L).build()));
         rating = Rating.builder().id(5L).build();
 
         client = HttpClient.newBuilder()
@@ -79,23 +84,34 @@ public abstract class BaseTest {
         return "http://localhost:" + port;
     }
 
-    protected void createUsers() {
+    protected void createBaseFilm() {
+        baseFilm = Film.builder()
+                .name("Кошмар на улице Вязов")
+                .releaseDate(LocalDate.of(1984, 11, 9))
+                .duration(ofMinutes(91))
+                .description("Подростки из одного района сталкиваются с Фредди Крюгером — маньяком с перчаткой-лезвием, " +
+                        "который убивает своих жертв в их снах.")
+                .mpa(rating)
+                .build();
 
+        filmStorage.create(baseFilm);
+    }
+
+    protected void createUsers() {
         for (int i = 0; i < 6; i++) {
             User user = User.builder()
                     .email("user" + i + "@email.ru")
-                    .login("user1")
-                    .name("Пользователь Один")
-                    .birthday(LocalDate.of(2015, 8, 13))
+                    .login("user" + i)
+                    .name("Пользователь")
+                    .birthday(LocalDate.now())
                     .build();
 
             userStorage.create(user);
-            testUsers.add(user);
         }
     }
 
     protected void createFilms() {
-        storageFilm(Film.builder()
+        filmStorage.create(Film.builder()
                 .name("Астрал")
                 .releaseDate(LocalDate.of(2011, 4, 1))
                 .duration(ofMinutes(102))
@@ -105,7 +121,7 @@ public abstract class BaseTest {
                 .genres(singleGenre)
                 .build());
 
-        storageFilm(Film.builder()
+        filmStorage.create(Film.builder()
                 .name("Изгоняющий дьявола")
                 .releaseDate(LocalDate.of(1973, 12, 26))
                 .duration(ofMinutes(122))
@@ -115,7 +131,7 @@ public abstract class BaseTest {
                 .genres(singleGenre)
                 .build());
 
-        storageFilm(Film.builder()
+        filmStorage.create(Film.builder()
                 .name("Техасская резня бензопилой")
                 .releaseDate(LocalDate.of(1974, 10, 1))
                 .duration(ofMinutes(83))
@@ -125,7 +141,7 @@ public abstract class BaseTest {
                 .genres(singleGenre)
                 .build());
 
-        storageFilm(Film.builder()
+        filmStorage.create(Film.builder()
                 .name("Сияние")
                 .releaseDate(LocalDate.of(1980, 5, 23))
                 .duration(ofMinutes(146))
@@ -136,15 +152,16 @@ public abstract class BaseTest {
                 .build());
     }
 
-    private void storageFilm(Film film) {
-        filmStorage.create(film);
-        testFilms.add(film);
-    }
-
     @AfterAll
     public void tearDown() {
-        filmStorage.clear();
-        userStorage.clear();
+        JdbcTemplate jdbc = namedParameterJdbcTemplate.getJdbcTemplate();
+        jdbc.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbc.execute("TRUNCATE TABLE film_genre RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE likes RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE films RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE friends RESTART IDENTITY");
+        jdbc.execute("TRUNCATE TABLE users RESTART IDENTITY");
+        jdbc.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 
     private void populateGenresStorage() {

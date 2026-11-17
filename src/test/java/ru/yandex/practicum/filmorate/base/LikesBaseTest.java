@@ -16,15 +16,15 @@ public class LikesBaseTest extends BaseTest {
     }
 
     private void addLikes() {
-        filmStorage.findById(2L).ifPresent(f -> f.getLikes().add(1L));
-        filmStorage.findById(3L).ifPresent(f -> f.getLikes().add(1L));
-        filmStorage.findById(3L).ifPresent(f -> f.getLikes().add(2L));
-        filmStorage.findById(3L).ifPresent(f -> f.getLikes().add(3L));
-        filmStorage.findById(3L).ifPresent(f -> f.getLikes().add(4L));
-        filmStorage.findById(3L).ifPresent(f -> f.getLikes().add(5L));
-        filmStorage.findById(3L).ifPresent(f -> f.getLikes().add(6L));
-        filmStorage.findById(4L).ifPresent(f -> f.getLikes().add(6L));
-        filmStorage.findById(4L).ifPresent(f -> f.getLikes().add(5L));
-        filmStorage.findById(4L).ifPresent(f -> f.getLikes().add(4L));
+        filmStorage.addLike(2L, 1L);
+        filmStorage.addLike(3L, 1L);
+        filmStorage.addLike(3L, 2L);
+        filmStorage.addLike(3L, 3L);
+        filmStorage.addLike(3L, 4L);
+        filmStorage.addLike(3L, 5L);
+        filmStorage.addLike(3L, 6L);
+        filmStorage.addLike(4L, 6L);
+        filmStorage.addLike(4L, 5L);
+        filmStorage.addLike(4L, 4L);
     }
 }

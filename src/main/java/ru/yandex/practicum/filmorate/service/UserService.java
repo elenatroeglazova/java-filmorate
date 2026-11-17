@@ -4,13 +4,18 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import ru.yandex.practicum.filmorate.enums.EventOperation;
+import ru.yandex.practicum.filmorate.enums.EventType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -19,7 +24,9 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final EventService eventService;
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     public Collection<User> users() {
         log.info("Получен запрос на получение всех пользователей");
@@ -72,15 +79,29 @@ public class UserService {
         return userUpdate;
     }
 
+    public void delete(Long id) {
+        log.info("Получен запрос на удаление пользователя с id={}", id);
+        if (!userStorage.delete(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
+        log.info("Пользователь с id={} удален", id);
+    }
+
+    @Transactional
     public void addFriend(Long userId, Long friendId) {
         log.info("Получен запрос на добавление друга id={} пользователю id={}", friendId, userId);
         checkUser(friendId, "Попытка добавить несуществующего пользователя с id={} в друзья");
         checkUser(userId, "Попытка добавить друга несуществующему пользователю с id={}");
 
+        if (userStorage.findById(userId).orElseThrow().getFriends().containsKey(friendId)) {
+            return;
+        }
         userStorage.addFriend(userId, friendId);
+        eventService.record(userId, EventType.FRIEND, EventOperation.ADD, friendId);
         log.info("Пользователь {} успешно добавил в друзья пользователя {}", userId, friendId);
     }
 
+    @Transactional
     public void removeFriend(Long userId, Long friendId) {
         log.info("Получен запрос на удаление друга id={} из списка друзей пользователя id={}", friendId, userId);
         checkUser(friendId, "Попытка удаления из друзей несуществующего пользователя id={}");
@@ -89,6 +110,7 @@ public class UserService {
         boolean isRemoved = userStorage.removeFriend(userId, friendId);
 
         if (isRemoved) {
+            eventService.record(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
             log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
         }
     }
@@ -112,7 +134,38 @@ public class UserService {
         return userStorage.mutualFriends(userId, otherId);
     }
 
-    private void checkUser(Long id, String errMessage) {
+    public Collection<Film> recommend(long userId) {
+        log.info("Получен запрос рекомендаций для пользователя с id={}", userId);
+        final List<Long> usersWithSimilarLikes = userStorage.usersWithSimilarLikes(userId);
+
+        log.debug("Полученный список пользователей, чьи лайки совпадают с {}: {}", userId, usersWithSimilarLikes);
+        if (isEmpty(usersWithSimilarLikes)) {
+            log.info("Не найдены совпадения лайков пользователя с id={}", userId);
+            return Collections.emptyList();
+        }
+
+        List<Long> recommendedIds = userStorage.findRecommendedFilmIds(userId, usersWithSimilarLikes);
+
+        if (ObjectUtils.isEmpty(recommendedIds)) {
+            log.info("Не найдена ни одна рекомендация для пользователя с id={}", userId);
+            return Collections.emptyList();
+        }
+
+        log.info("Найдены рекомендации для пользователя с id={}: {}", userId, recommendedIds);
+        Collection<Film> recommendedFilms = filmStorage.findByIds(recommendedIds);
+
+        Map<Long, Film> filmsById = new HashMap<>();
+        for (Film f : recommendedFilms) {
+            filmsById.put(f.getId(), f);
+        }
+
+        return recommendedIds.stream()
+                .map(filmsById::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    public void checkUser(Long id, String errMessage) {
         userStorage.findById(id).ifPresentOrElse(
                 u -> log.debug("Пользователь {} найден по id={}", u, id),
                 () -> {

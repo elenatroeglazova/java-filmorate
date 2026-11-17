@@ -104,8 +104,29 @@ public class UserDbStorage implements UserStorage {
             ) f ON f.user_id = u.id
             """;
 
+    private static final String FIND_USERS_WITH_SIMILAR_LIKES_SQL = """
+            SELECT l2.user_id
+            FROM likes l1
+            JOIN likes l2 ON l2.film_id = l1.film_id
+            WHERE l1.user_id = :userId
+                AND l2.user_id != :userId
+            GROUP BY l2.user_id
+            ORDER BY l2.user_id DESC
+            """;
+
+    private static final String FIND_RECOMMENDED_FILM_IDS_SQL = """
+            SELECT l.film_id
+            FROM likes l
+            WHERE l.user_id IN (:users)
+              AND l.film_id NOT IN (
+                  SELECT film_id FROM likes WHERE user_id = :userId
+              )
+            GROUP BY l.film_id
+            ORDER BY count(*) DESC, l.film_id
+            """;
+
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final UserResultSetExtractor extractor;
+    private final UserResultSetExtractor userResultSetExtractor;
     private final DataSource dataSource;
 
     @Override
@@ -150,7 +171,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        return namedParameterJdbcTemplate.query(FIND_ALL_SQL, extractor);
+        return namedParameterJdbcTemplate.query(FIND_ALL_SQL, userResultSetExtractor);
     }
 
     @Override
@@ -158,7 +179,7 @@ public class UserDbStorage implements UserStorage {
         List<User> users = namedParameterJdbcTemplate.query(
                 FIND_BY_ID_SQL,
                 new MapSqlParameterSource("id", id),
-                extractor);
+                userResultSetExtractor);
 
         return Optional.ofNullable(users)
                 .filter(list -> !list.isEmpty())
@@ -170,7 +191,7 @@ public class UserDbStorage implements UserStorage {
         return namedParameterJdbcTemplate.query(
                 FIND_FRIENDS_SQL,
                 new MapSqlParameterSource("userId", id),
-                extractor);
+                userResultSetExtractor);
     }
 
     @Override
@@ -199,11 +220,24 @@ public class UserDbStorage implements UserStorage {
                 new MapSqlParameterSource()
                         .addValue("userId", userId)
                         .addValue("otherId", otherId),
-                extractor);
+                userResultSetExtractor);
     }
 
     @Override
-    public void clear() {
+    public List<Long> usersWithSimilarLikes(Long userId) {
+        return namedParameterJdbcTemplate.queryForList(
+                FIND_USERS_WITH_SIMILAR_LIKES_SQL,
+                new MapSqlParameterSource("userId", userId),
+                Long.class);
+    }
 
+    @Override
+    public List<Long> findRecommendedFilmIds(Long userId, List<Long> users) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("users", users);
+
+        return namedParameterJdbcTemplate.queryForList(
+                FIND_RECOMMENDED_FILM_IDS_SQL, params, Long.class);
     }
 }
